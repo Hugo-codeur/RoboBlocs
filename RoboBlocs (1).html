@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RoboBlocs 🤖</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:#000000; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; overflow-x:hidden; isolation:isolate; }
+  body::before { content:''; position:fixed; inset:0; background-image:radial-gradient(circle,#3a2a5c 1.5px,transparent 1.5px); background-size:32px 32px; opacity:0.8; z-index:-1; pointer-events:none; transition:opacity 0.3s; }
+  body.vue-mbot2-active::before { opacity:0; }
+  body.clair::before { opacity:0; }
+  #vue-portail { display:flex; flex-direction:column; align-items:center; width:100%; position:relative; }
+  #vue-mbot2   { display:none; width:100%; position:relative; z-index:2; }
+  .container { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; padding:40px 24px 60px; width:100%; max-width:900px; }
+  .logo-zone { text-align:center; margin-bottom:16px; animation:fadeDown 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .logo-icon { font-size:72px; display:block; margin-bottom:8px; animation:spinIn 0.8s cubic-bezier(0.34,1.56,0.64,1) 0.2s both; }
+  @keyframes spinIn { from{transform:rotate(-20deg) scale(0.5);opacity:0} to{transform:rotate(0deg) scale(1);opacity:1} }
+  .logo-titre { font-family:'Fredoka One',cursive; font-size:clamp(3rem,10vw,5.5rem); background:linear-gradient(135deg,#667eea,#764ba2,#f093fb); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; letter-spacing:-1px; }
+  .logo-sous-titre { margin-top:10px; font-size:1.1rem; font-weight:700; color:#888; }
+  @keyframes fadeDown { from{transform:translateY(-30px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes fadeUp   { from{transform:translateY(20px);opacity:0}  to{transform:translateY(0);opacity:1} }
+  .choix-titre { font-family:'Fredoka One',cursive; font-size:1.6rem; color:#444; margin-bottom:36px; text-align:center; animation:fadeUp 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .robots-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:32px; width:100%; max-width:720px; }
+  .robot-card { background:#fff; border-radius:28px; padding:36px 28px 32px; text-align:center; box-shadow:0 8px 32px rgba(102,126,234,0.13),0 2px 8px rgba(0,0,0,0.06); border:3px solid transparent; transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.25s,border-color 0.2s; position:relative; overflow:hidden; animation:fadeUp 0.6s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .robot-card:nth-child(1){animation-delay:0.4s} .robot-card:nth-child(2){animation-delay:0.55s}
+  .robot-card::before { content:''; position:absolute; top:0;left:0;right:0; height:5px; background:var(--card-gradient); border-radius:28px 28px 0 0; }
+  .robot-card.actif { --card-gradient:linear-gradient(90deg,#667eea,#764ba2); cursor:pointer; }
+  .robot-card.actif:hover { transform:translateY(-12px) scale(1.03); box-shadow:0 24px 56px rgba(102,126,234,0.28),0 4px 16px rgba(0,0,0,0.08); border-color:#764ba2; }
+  .robot-card.bientot { --card-gradient:linear-gradient(90deg,#ccc,#ddd); cursor:not-allowed; opacity:0.65; filter:grayscale(0.4); }
+  .robot-img-zone { width:160px; height:160px; margin:0 auto 20px; border-radius:20px; overflow:hidden; background:#f5f5f5; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+  .robot-img-zone img { width:100%; height:100%; object-fit:cover; }
+  .robot-img-placeholder { font-size:72px; }
+  .robot-nom { font-family:'Fredoka One',cursive; font-size:2rem; color:#2d2d2d; margin-bottom:8px; }
+  .robot-desc { font-size:0.95rem; font-weight:600; color:#888; line-height:1.6; margin-bottom:20px; }
+  .robot-badge { display:inline-block; padding:8px 22px; border-radius:50px; font-weight:800; font-size:0.9rem; transition:transform 0.15s; }
+  .robot-card.actif .robot-badge { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; box-shadow:0 4px 14px rgba(102,126,234,0.4); }
+  .robot-card.actif:hover .robot-badge { transform:scale(1.06); }
+  .robot-card.bientot .robot-badge { background:#f0f0f0; color:#bbb; }
+  .bientot-tag { position:absolute; top:18px; right:18px; background:#f0f0f0; color:#aaa; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:20px; letter-spacing:1px; text-transform:uppercase; }
+  .portal-footer { margin-top:50px; text-align:center; color:#bbb; font-size:0.9rem; font-weight:600; animation:fadeUp 0.6s 0.8s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .portal-footer span { color:#764ba2; }
+  .btn-retour { position:fixed; top:18px; left:18px; z-index:500; background:#fff; border:2px solid #764ba2; color:#764ba2; font-family:'Nunito',sans-serif; font-weight:800; font-size:0.95rem; padding:8px 18px; border-radius:50px; cursor:pointer; display:none; align-items:center; gap:6px; box-shadow:0 4px 14px rgba(118,75,162,0.18); transition:background 0.2s,color 0.2s,transform 0.15s; }
+  .btn-retour:hover { background:#764ba2; color:#fff; transform:scale(1.05); }
+  .btn-retour.visible { display:flex; }
+  body.sombre .btn-retour { background:#252540; border-color:#9b72cf; color:#c084fc; }
+  body.sombre .btn-retour:hover { background:#764ba2; color:#fff; }
+
+  :root { --bg:#000000; --texte:#e8e8f0; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Nunito',sans-serif; background:var(--bg); color:var(--texte); overflow-x:hidden; transition:background 0.3s, color 0.3s; }
+
+  body.clair { --bg:#ffffff; --texte:#2D2D2D; background:#ffffff; }
+  body.clair .intro p            { color:#555; }
+  body.clair .intro h2           { color:#764ba2; }
+  body.clair .categories-titre   { color:#2D2D2D; }
+  body.clair .modal              { background:#fff; }
+  body.clair .modal-header       { background:#fff; border-bottom-color:#f0f0f0; }
+  body.clair .modal-header h2    { color:#2D2D2D; }
+  body.clair .modal-close        { background:#f0f0f0; color:#333; }
+  body.clair .fiche              { background:#fff; }
+  body.clair .fiche-explication  { background:#f8f8f8; }
+  body.clair .fiche-explication p{ color:#333; }
+  body.clair .recherche-box      { background:#fff; }
+  body.clair .recherche-input    { color:#333; }
+  body.clair .resultat-item      { background:#fff; }
+  body.clair .resultat-nom       { color:#333; }
+  body.clair header              { background:#ffffff; }
+  body.clair header h1           { color:#764ba2; }
+  body.clair header p            { color:#667eea; }
+  body.clair footer              { background:#2D2D2D; }
+  body.clair .btn-retour         { background:#fff; border-color:#764ba2; color:#764ba2; }
+  body.clair .params-panneau     { background:#fff; }
+  body.clair .params-titre       { color:#2D2D2D; }
+  body.clair .params-option-label{ color:#2D2D2D; }
+  body.clair .robot-card         { background:#fff; }
+  body.clair .robot-nom          { color:#2d2d2d; }
+  body.clair .choix-titre        { color:#444; }
+  body.clair .logo-sous-titre    { color:#888; }
+  body.clair .portal-footer      { color:#bbb; }
+
+  /* ── BOUTON PARAMÈTRES ── */
+  .btn-params {
+    position:fixed; bottom:28px; right:28px; z-index:300;
+    background:linear-gradient(135deg,#667eea,#764ba2);
+    border:none; border-radius:50%; width:58px; height:58px;
+    font-size:1.6rem; cursor:pointer;
+    box-shadow:0 6px 20px rgba(102,126,234,0.5);
+    transition:transform 0.2s, box-shadow 0.2s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .btn-params:hover { transform:scale(1.12) rotate(30deg); box-shadow:0 10px 30px rgba(102,126,234,0.6); }
+
+  /* ── PANNEAU PARAMÈTRES ── */
+  .params-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(5px); z-index:400; align-items:flex-end; justify-content:center; padding:20px; }
+  .params-overlay.open { display:flex; }
+  .params-panneau {
+    background:#fff; border-radius:28px; padding:30px 28px 28px;
+    width:100%; max-width:420px; box-shadow:0 -10px 50px rgba(0,0,0,0.2);
+    animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  body.sombre .params-panneau { background:#252540; }
+  @keyframes slideUp { from{transform:translateY(100px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .params-titre { font-family:'Fredoka One',cursive; font-size:1.5rem; margin-bottom:24px; display:flex; align-items:center; gap:10px; }
+  body.sombre .params-titre { color:#e8e8f0; }
+  .params-option { display:flex; align-items:center; justify-content:space-between; padding:16px 0; border-bottom:2px dashed #f0f0f0; }
+  body.sombre .params-option { border-bottom-color:#3a3a5c; }
+  .params-option:last-of-type { border-bottom:none; }
+  .params-option-label { font-size:1.05rem; font-weight:700; display:flex; align-items:center; gap:10px; }
+  body.sombre .params-option-label { color:#e8e8f0; }
+  .params-option-desc { font-size:0.82rem; color:#999; margin-top:2px; }
+  .toggle { position:relative; width:60px; height:32px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; inset:0; background:#ddd; border-radius:32px; cursor:pointer; transition:background 0.3s; }
+  .toggle-slider::before { content:''; position:absolute; width:24px; height:24px; left:4px; top:4px; background:#fff; border-radius:50%; transition:transform 0.3s; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+  .toggle input:checked + .toggle-slider { background:linear-gradient(135deg,#667eea,#764ba2); }
+  .toggle input:checked + .toggle-slider::before { transform:translateX(28px); }
+  .params-fermer { width:100%; margin-top:20px; background:linear-gradient(135deg,#667eea,#764ba2); border:none; border-radius:16px; padding:14px; color:#fff; font-family:'Nunito',sans-serif; font-weight:800; font-size:1rem; cursor:pointer; transition:opacity 0.2s; }
+  .params-fermer:hover { opacity:0.9; }
+
+  /* ── HEADER ── */
+  header { background:#000000; padding:40px 20px 60px; text-align:center; position:relative; overflow:hidden; }
+  header h1 { font-family:'Fredoka One',cursive; font-size:clamp(2.2rem,6vw,4rem); color:#c084fc; text-shadow:none; margin-bottom:10px; }
+  header p  { color:#9b8fcc; font-size:1.2rem; font-weight:700; }
+  body.clair header { background:#ffffff; }
+  body.clair header h1 { color:#764ba2; }
+  body.clair header p  { color:#667eea; }
+  header::before { content:''; position:absolute; top:-60px; left:-60px; width:220px; height:220px; background:rgba(102,126,234,0.06); border-radius:50%; }
+  header::after  { content:''; position:absolute; bottom:-70px; right:-40px; width:260px; height:260px; background:rgba(118,75,162,0.05); border-radius:50%; }
+  .header-robot { width:200px; height:200px; object-fit:contain; animation:bounce 2.5s ease-in-out infinite; display:block; margin:0 auto 16px; filter:drop-shadow(0 10px 28px rgba(0,0,0,0.35)); }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+
+  /* ── INTRO ── */
+  .intro { text-align:center; padding:50px 24px 10px; max-width:740px; margin:0 auto; }
+  .intro h2 { font-family:'Fredoka One',cursive; font-size:2rem; color:#764ba2; margin-bottom:14px; }
+  .intro p  { font-size:1.1rem; line-height:1.8; color:#555; }
+
+  /* ── BARRE DE RECHERCHE ── */
+  .recherche-zone { max-width:620px; margin:40px auto 10px; padding:0 24px; }
+  .recherche-box { display:flex; align-items:center; gap:14px; background:#fff; border-radius:60px; padding:14px 26px; box-shadow:0 6px 24px rgba(0,0,0,0.1); border:3px solid transparent; transition:border-color 0.2s,box-shadow 0.2s; }
+  .recherche-box:focus-within { border-color:#764ba2; box-shadow:0 6px 28px rgba(118,75,162,0.25); }
+  .recherche-icon { font-size:1.6rem; flex-shrink:0; }
+  .recherche-input { border:none; outline:none; font-family:'Nunito',sans-serif; font-size:1.1rem; font-weight:700; color:#333; width:100%; background:transparent; }
+  .recherche-input::placeholder { color:#ccc; font-weight:600; }
+  .recherche-effacer { background:#f0f0f0; border:none; border-radius:50%; width:32px; height:32px; font-size:1rem; cursor:pointer; display:none; align-items:center; justify-content:center; transition:background 0.2s; flex-shrink:0; }
+  .recherche-effacer:hover { background:#FFD93D; }
+  .recherche-effacer.visible { display:flex; }
+
+  /* ── RÉSULTATS ── */
+  .resultats-zone { display:none; max-width:1100px; margin:0 auto; padding:10px 28px 50px; }
+  .resultats-zone.visible { display:block; }
+  .resultats-titre { font-family:'Fredoka One',cursive; font-size:1.5rem; color:#764ba2; margin-bottom:20px; text-align:center; }
+  .resultats-vide  { text-align:center; font-size:1.2rem; color:#bbb; padding:50px 0; }
+  .resultats-grille { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  .resultat-item { background:#fff; border-radius:18px; padding:16px 18px; display:flex; align-items:center; gap:16px; box-shadow:0 4px 16px rgba(0,0,0,0.08); cursor:pointer; border:3px solid transparent; transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s; }
+  .resultat-item:hover { transform:translateY(-4px); box-shadow:0 10px 28px rgba(0,0,0,0.13); border-color:var(--rc,#764ba2); }
+  .resultat-cat-badge { font-size:2rem; flex-shrink:0; }
+  .resultat-infos { flex:1; min-width:0; }
+  .resultat-nom { font-weight:800; font-size:1rem; color:#333; margin-bottom:4px; }
+  .resultat-cat { font-size:0.82rem; font-weight:700; color:var(--rc,#764ba2); }
+  .resultat-fleche { font-size:1.3rem; color:#ddd; flex-shrink:0; }
+  mark { background:#FFD93D; border-radius:4px; padding:0 3px; color:#333; }
+
+  /* ── TITRE CATÉGORIES ── */
+  .categories-titre { font-family:'Fredoka One',cursive; font-size:2.2rem; text-align:center; margin:50px 0 24px; color:var(--texte); }
+
+  /* ── GRILLE CATÉGORIES ── */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:28px; max-width:1140px; margin:0 auto; padding:0 28px 70px; }
+  .cat-card { background:var(--accent,#764ba2); border-radius:28px; padding:32px 22px 26px; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,0.15); cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; }
+  .cat-card:hover { transform:translateY(-10px) scale(1.03); box-shadow:0 20px 48px rgba(0,0,0,0.22); }
+  .cat-icon  { font-size:58px; margin-bottom:14px; display:block; }
+  .cat-card h3 { font-family:'Fredoka One',cursive; font-size:1.35rem; color:#fff; text-shadow:1px 2px 4px rgba(0,0,0,0.2); margin-bottom:8px; }
+  .cat-card p  { font-size:0.92rem; color:rgba(255,255,255,0.88); line-height:1.6; }
+  .cat-badge   { display:inline-block; margin-top:12px; background:rgba(255,255,255,0.28); color:#fff; font-size:0.82rem; font-weight:800; padding:4px 14px; border-radius:20px; }
+
+  /* ── VUE CATÉGORIE (deux colonnes) ── */
+  #vue-categorie { display:none; width:100%; min-height:100vh; }
+  .cat-vue-header {
+    padding:20px 32px 16px;
+    display:flex; align-items:center; gap:16px;
+    border-bottom:2px solid rgba(255,255,255,0.08);
+    position:sticky; top:0; z-index:10;
+    background:var(--bg,#000);
+  }
+  body.clair .cat-vue-header { border-bottom-color:rgba(0,0,0,0.08); }
+  .cat-vue-retour {
+    background:rgba(255,255,255,0.1); border:none; border-radius:50px;
+    color:#e8e8f0; font-family:'Nunito',sans-serif; font-weight:800;
+    font-size:0.9rem; padding:8px 18px; cursor:pointer;
+    transition:background 0.2s; white-space:nowrap;
+  }
+  body.clair .cat-vue-retour { background:rgba(0,0,0,0.08); color:#333; }
+  .cat-vue-retour:hover { background:rgba(255,255,255,0.2); }
+  body.clair .cat-vue-retour:hover { background:rgba(0,0,0,0.15); }
+  .cat-vue-titre {
+    font-family:'Fredoka One',cursive; font-size:1.8rem;
+    color:#e8e8f0; display:flex; align-items:center; gap:10px;
+  }
+  body.clair .cat-vue-titre { color:#2d2d2d; }
+
+  .cat-vue-body {
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:0;
+    height:calc(100vh - 70px);
+  }
+
+  /* ── COLONNE GAUCHE : liste blocs ── */
+  .col-blocs {
+    border-right:2px solid rgba(255,255,255,0.08);
+    overflow-y:auto; padding:20px 16px;
+    display:flex; flex-direction:column; gap:8px;
+  }
+  body.clair .col-blocs { border-right-color:rgba(0,0,0,0.08); }
+
+  .bloc-vignette {
+    border-radius:10px; padding:8px 14px;
+    display:flex; align-items:center;
+    cursor:pointer; position:relative;
+    transition:transform 0.15s, box-shadow 0.15s, filter 0.15s, outline 0.1s;
+    min-height:52px; outline:3px solid transparent;
+  }
+  .bloc-vignette::before {
+    content:''; position:absolute; top:-7px; left:14px;
+    width:20px; height:7px; background:inherit; border-radius:4px 4px 0 0;
+    filter:brightness(0.82);
+  }
+  .bloc-vignette:hover { transform:translateX(6px); box-shadow:0 4px 16px rgba(0,0,0,0.3); filter:brightness(1.1); }
+  .bloc-vignette.actif { outline:3px solid #fff; filter:brightness(1.15); transform:translateX(6px); }
+  body.clair .bloc-vignette.actif { outline:3px solid #333; }
+  .bloc-vignette img { height:70px; width:auto; max-width:100%; display:block; object-fit:contain; }
+  .bloc-fake { color:#fff; font-weight:800; font-size:0.95rem; line-height:1.5; text-shadow:0 1px 3px rgba(0,0,0,0.25); }
+
+  /* ── COLONNE DROITE : fiche mémo ── */
+  .col-fiche {
+    overflow-y:auto; padding:32px 36px;
+    display:flex; align-items:flex-start; justify-content:center;
+  }
+  .fiche-vide {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    height:100%; color:rgba(255,255,255,0.2); text-align:center; gap:16px;
+    width:100%;
+  }
+  body.clair .fiche-vide { color:rgba(0,0,0,0.15); }
+  .fiche-vide-icon { font-size:64px; }
+  .fiche-vide p { font-size:1.1rem; font-weight:700; }
+
+  .fiche { background:#1a1a2e; border-radius:28px; width:100%; max-width:520px; padding:28px 26px 24px; box-shadow:0 8px 32px rgba(0,0,0,0.4); border-top:8px solid var(--fc-color,#764ba2); animation:ficheAppear 0.25s ease both; }
+  @keyframes ficheAppear { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
+  body.clair .fiche { background:#fff; box-shadow:0 8px 32px rgba(0,0,0,0.1); }
+  .fiche-bloc { display:flex; justify-content:center; margin-bottom:22px; }
+  .fiche-bloc img { max-height:62px; max-width:100%; filter:drop-shadow(0 3px 8px rgba(0,0,0,0.2)); }
+  .fiche-bloc-fake { background:var(--fc-color,#764ba2); border-radius:10px; padding:11px 18px; color:#fff; font-weight:800; font-size:0.95rem; text-align:center; line-height:1.5; position:relative; }
+  .fiche-bloc-fake::before { content:''; position:absolute; top:-8px; left:14px; width:20px; height:8px; background:var(--fc-color,#764ba2); border-radius:4px 4px 0 0; }
+  .fiche-explication { background:rgba(255,255,255,0.05); border-radius:16px; padding:16px 18px; margin-bottom:16px; border-left:5px solid var(--fc-color,#764ba2); }
+  body.clair .fiche-explication { background:#f8f8f8; }
+  .fiche-explication-titre { font-size:0.75rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--fc-color,#764ba2); margin-bottom:8px; }
+  .fiche-explication p { font-size:1.05rem; color:#e8e8f0; line-height:1.7; font-weight:600; }
+  body.clair .fiche-explication p { color:#333; }
+  .fiche-exemple-titre { font-size:0.75rem; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#888; margin-bottom:10px; }
+  .blocs-empiles { display:flex; flex-direction:column; align-items:flex-start; gap:3px; }
+  .bloc-empile { border-radius:8px; padding:9px 16px; color:#fff; font-weight:800; font-size:0.88rem; line-height:1.4; position:relative; min-width:170px; }
+  .bloc-empile.premier::before { content:''; position:absolute; top:-7px; left:12px; width:18px; height:7px; background:inherit; border-radius:4px 4px 0 0; }
+  .bloc-empile.interieur { margin-left:22px; }
+  .bloc-empile.interieur::before { content:''; position:absolute; top:-7px; left:12px; width:16px; height:7px; background:inherit; border-radius:4px 4px 0 0; }
+
+  /* ── FOOTER ── */
+  footer { background:#2D2D2D; color:#aaa; text-align:center; padding:36px 20px; font-size:0.95rem; }
+  footer span { color:#FFD93D; }
+
+</style>
+</head>
+<body>
+
+<button class="btn-retour" id="btnRetour" onclick="gererRetour()">← RoboBlocs</button>
+
+<div id="vue-portail">
+<div class="container">
+  <div class="logo-zone">
+    <span class="logo-icon">🤖</span>
+    <div class="logo-titre">RoboBlocs</div>
+    <div class="logo-sous-titre">Apprends les blocs pour pouvoir programmer ton robot facilement ! 🚀</div>
+  </div>
+  <h2 class="choix-titre">🎯 Quel robot veux-tu apprendre ?</h2>
+  <div class="robots-grid">
+    <div class="robot-card actif" onclick="allerVers('mbot2')">
+      <div class="robot-img-zone"><img src="images/mbot2.jpeg" alt="mBot 2"></div>
+      <div class="robot-nom">mBot 2</div>
+      <div class="robot-desc">Explore les blocs de programmation du mBot 2 avec des fiches simples et colorées !</div>
+      <div class="robot-badge">▶ Commencer →</div>
+    </div>
+    <div class="robot-card bientot">
+      <span class="bientot-tag">Bientôt !</span>
+      <div class="robot-img-zone"><span class="robot-img-placeholder">🦾</span></div>
+      <div class="robot-nom">Thymio</div>
+      <div class="robot-desc">Le contenu pour le robot Thymio arrive bientôt. Patience !</div>
+      <div class="robot-badge">⏳ En cours…</div>
+    </div>
+  </div>
+  <div class="portal-footer">Créer avec <span>❤️</span> par moi même "Hugo D" et "Claude AI" pour apprendre les blocs de programmation.</div>
+</div>
+</div>
+
+<div id="vue-mbot2">
+<header>
+  <img class="header-robot" src="images/mbot2.jpeg" alt="mBot 2">
+  <h1>Les Blocs du mBot 2</h1>
+  <p>Apprends les blocs pour pouvoir programmer ton robot facilement ! 🚀 🚀</p>
+</header>
+<div class="intro">
+  <h2> Comment ce site foncitonne ?</h2>
+  <p>Dans mBlock, on programme le robot en glissant des <strong>blocs de code colorés,</strong> Si tu souhaites comprendre et apprendre les blocs voici les étape à suivre : .<br>
+  <strong>1.</strong> Clique sur une catégorie &nbsp;→&nbsp; <strong>2.</strong> Choisis et clic sur un bloc &nbsp;→&nbsp; <strong>3.</strong> Lis la fiche mémoire, pour chacun des blocs il y auras un exemple et une explication</p>
+</div>
+
+<h2 class="categories-titre" id="categoriesTitre">📦 Choisis une catégorie !</h2>
+
+<div class="recherche-zone">
+  <div class="recherche-box">
+    <span class="recherche-icon">🔍</span>
+    <input class="recherche-input" id="rechercheInput" type="text" placeholder="Tape le nom d'un bloc... ex : avancer, son, LED" autocomplete="off"/>
+    <button class="recherche-effacer" id="rechercheEffacer" onclick="effacerRecherche()">✕</button>
+  </div>
+</div>
+
+<div class="resultats-zone" id="resultatsZone">
+  <p class="resultats-titre" id="resultats-titre"></p>
+  <div class="resultats-grille" id="resultatsGrille"></div>
+  <p class="resultats-vide" id="resultatsVide" style="display:none">😕 Aucun bloc trouvé... essaie un autre mot !</p>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  <p>Créer avec <span>❤️</span> par moi même "Hugo D" et "Claude AI"</p>
+</footer>
+</div>
+
+<div id="vue-categorie">
+  <div class="cat-vue-header">
+    <button class="cat-vue-retour" onclick="fermerCategorie()">← Catégories</button>
+    <div class="cat-vue-titre">
+      <span id="catVueIcon"></span>
+      <span id="catVueTitre"></span>
+    </div>
+  </div>
+  <div class="cat-vue-body">
+    <div class="col-blocs" id="colBlocs"></div>
+    <div class="col-fiche" id="colFiche">
+      <div class="fiche-vide">
+        <span class="fiche-vide-icon">👈</span>
+        <p>Clique sur un bloc<br>pour voir sa fiche !</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="btn-params" onclick="ouvrirParams()" title="Paramètres">⚙️</button>
+
+<div class="params-overlay" id="paramsOverlay" onclick="fermerParams(event)">
+  <div class="params-panneau" onclick="event.stopPropagation()">
+    <div class="params-titre">⚙️ Paramètres</div>
+    <div class="params-option">
+      <div>
+        <div class="params-option-label">☀️ Mode clair</div>
+        <div class="params-option-desc">Fond blanc, idéal en pleine lumière</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggleSombre" onchange="changerMode()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <button class="params-fermer" onclick="fermerParamsBtn()">✅ Fermer</button>
+  </div>
+</div>
+
+<script>
+function gererRetour() {
+  if (document.getElementById('vue-categorie').style.display === 'block') {
+    fermerCategorie();
+  } else {
+    allerVers('portail');
+  }
+}
+
+function allerVers(vue) {
+  var portail   = document.getElementById('vue-portail');
+  var vmbot2    = document.getElementById('vue-mbot2');
+  var btnRetour = document.getElementById('btnRetour');
+  if (vue === 'mbot2') {
+    portail.style.display = 'none';
+    document.getElementById('vue-categorie').style.display = 'none';
+    vmbot2.style.display  = 'block';
+    btnRetour.classList.add('visible');
+    document.body.classList.add('vue-mbot2-active');
+    window.scrollTo(0,0);
+  } else {
+    vmbot2.style.display  = 'none';
+    document.getElementById('vue-categorie').style.display = 'none';
+    portail.style.display = 'flex';
+    portail.style.flexDirection = 'column';
+    portail.style.alignItems = 'center';
+    btnRetour.classList.remove('visible');
+    document.body.classList.remove('vue-mbot2-active');
+    window.scrollTo(0,0);
+  }
+}
+</script>
+<script>
+
+var categories = [
+  {
+    id:"audio", icon:"🔊", titre:"Audio", couleur:"#BB8FD8",
+    couleur2:"#9b6bbf",
+    desc:"Fais jouer des sons, de la musique et enregistre des bruits avec ton robot !",
+    blocs:[
+      {nom:"Lire le son jusqu'à la fin", svg:"lire_le_son_jusqu_a_la_fin.svg", desc:"Le robot joue un son et attend la fin avant de faire autre chose. Comme attendre la fin d'une chanson !", blocsExemple:[{texte:"▶️ lire le son 'salut' jusqu'à la fin",couleur:"#BB8FD8"},{texte:"⚙️ avancer",couleur:"#4AABDB"}]},
+      {nom:"Lire le son (sans attendre)", svg:"lire_le_son.svg", desc:"Le robot joue un son ET continue à bouger en même temps. Il peut faire deux choses à la fois !", blocsExemple:[{texte:"▶️ lire le son 'salut'",couleur:"#BB8FD8"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"Commencer l'enregistrement", svg:"commencer_l_enregistrement.svg", desc:"Le robot allume son micro et commence à écouter tout ce qui se passe autour de lui !", blocsExemple:[{texte:"🎙️ commencer l'enregistrement",couleur:"#BB8FD8"},{texte:"⏱️ attendre 3 secondes",couleur:"#E6A817"},{texte:"⏹️ arrêter l'enregistrement",couleur:"#BB8FD8"}]},
+      {nom:"Arrêter l'enregistrement", svg:"arreter_l_enregistrement.svg", desc:"Le robot éteint son micro et arrête d'écouter.", blocsExemple:[]},
+      {nom:"Lire l'enregistrement jusqu'à la fin", svg:"lire_enregistrement_jusqu_a_la_fin.svg", desc:"Le robot rejoue le son qu'il a enregistré et attend la fin avant de continuer.", blocsExemple:[{texte:"▶️ lire l'enregistrement jusqu'à la fin",couleur:"#BB8FD8"},{texte:"💡 LED verte",couleur:"#9B72CF"}]},
+      {nom:"Lire l'enregistrement (sans attendre)", svg:"lire_enregistrement.svg", desc:"Le robot rejoue le son enregistré tout en continuant à faire autre chose !", blocsExemple:[]},
+      {nom:"Jouer la note 60 pendant 0,5 temps", svg:"jouer_la_note.svg", desc:"Le robot joue une note ! 60 = Do (la note la plus grave), 72 = Do aigu. Plus le chiffre monte, plus la note est haute !", blocsExemple:[{texte:"🎵 jouer note 60 (Do) - 0.5 temps",couleur:"#BB8FD8"},{texte:"🎵 jouer note 62 (Ré) - 0.5 temps",couleur:"#BB8FD8"},{texte:"🎵 jouer note 64 (Mi) - 0.5 temps",couleur:"#BB8FD8"}]},
+      {nom:"Jouer caisse claire pendant 0,25 temps", svg:"jouer_pendant_temps.svg", desc:"Le robot joue un son de batterie. Caisse claire, grosse caisse, cymbale... à toi de choisir !", blocsExemple:[{texte:"🥁 caisse claire - 0.25 temps",couleur:"#BB8FD8"},{texte:"🥁 grosse caisse - 0.5 temps",couleur:"#BB8FD8"}]},
+      {nom:"Augmenter la vitesse de l'audio de 10%", svg:"augmenter_la_vitesse_audio_de.svg", desc:"Accélère la vitesse du son ! +10% = un peu plus vite, +100% = deux fois plus rapide !", blocsExemple:[{texte:"⏩ augmenter vitesse audio de 50%",couleur:"#BB8FD8"},{texte:"▶️ lire le son 'salut' jusqu'à la fin",couleur:"#BB8FD8"}]},
+      {nom:"Régler la vitesse de l'audio à 100%", svg:"regler_la_vitesse_audio_a.svg", desc:"Remet le son à sa vitesse normale. Comme un retour à zéro !", blocsExemple:[]},
+      {nom:"Vitesse de l'audio", svg:"vitesse_de_audio.svg", desc:"Donne un chiffre qui indique à quelle vitesse le son est joué en ce moment.", blocsExemple:[{texte:"📊 vitesse audio = ???",couleur:"#BB8FD8"}]},
+      {nom:"Augmenter le volume de 10%", svg:"augmenter_volume_de.svg", desc:"Monte le volume ! Le son devient plus fort.", blocsExemple:[{texte:"🔈 augmenter volume de 20%",couleur:"#BB8FD8"},{texte:"▶️ lire le son 'salut'",couleur:"#BB8FD8"}]},
+      {nom:"Régler le volume à 30%", svg:"regler_volume_a.svg", desc:"Règle le volume exactement comme tu veux. 0% = silence total, 100% = à fond !", blocsExemple:[{texte:"🔉 régler volume à 80%",couleur:"#BB8FD8"},{texte:"▶️ lire le son 'salut' jusqu'à la fin",couleur:"#BB8FD8"}]},
+      {nom:"Volume (%)", svg:"volume.svg", desc:"Donne un chiffre entre 0 et 100 qui indique le volume actuel.", blocsExemple:[{texte:"📊 volume actuel = ???",couleur:"#BB8FD8"}]},
+      {nom:"Jouer la fréquence 700 Hz pendant 1 seconde", svg:"jouer_la_fréquence_hz_pendant_secondes.svg", desc:"Joue un bip électronique ! Plus le nombre de Hz est grand, plus le son est aigu. Essaie 200 Hz (grave) et 2000 Hz (aigu) !", blocsExemple:[{texte:"〰️ fréquence 200 Hz (grave 🐻) - 1 sec",couleur:"#BB8FD8"},{texte:"〰️ fréquence 2000 Hz (aigu 🐭) - 1 sec",couleur:"#BB8FD8"}]},
+      {nom:"Jouer la fréquence 700 Hz (sans attendre)", svg:"jouer_la_fréquence.svg", desc:"Joue un bip et continue le programme sans attendre la fin du son.", blocsExemple:[]},
+      {nom:"Arreter tous les sons", svg:"arreter_tous_les_sons.svg", desc:"Stoppe tous les sons immédiatement. Silence !", blocsExemple:[{texte:"🔘 bouton A pressé ?",couleur:"#E8943A"},{texte:"🔇 arrêter tous les sons",couleur:"#BB8FD8"}]},
+    ]
+  },
+  {
+    id:"led", icon:"💡", titre:"LED", couleur:"#9B72CF",
+    couleur2:"#7c52b0",
+    desc:"Allume, éteins et fais clignoter les lumières colorées de ton robot !",
+    blocs:[
+      {nom:"Jouer l'animation LED Arc-en-ciel", svg:"jouer_animation_led.svg", desc:"Lance un effet arc-en-ciel sur toutes les lumières du robot. Super beau !", blocsExemple:[{texte:"🌈 animation LED arc-en-ciel jusqu'à la fin",couleur:"#9B72CF"}]},
+      {nom:"Afficher une couleur sur les LED", svg:"afficher_couleur.svg", desc:"Allume les LED du robot avec la couleur que tu choisis.", blocsExemple:[{texte:"💬 afficher 'il y a des couleurs'",couleur:"#9B72CF"}]},
+      {nom:"Décaler les LED de 1 rang à droite", svg:"décaler_les_led_rang_a_droite.svg", desc:"Décale toutes les lumières d'un cran vers la droite. Ça fait un effet de lumière qui se déplace !", blocsExemple:[{texte:"💡 LED rouge",couleur:"#9B72CF"},{texte:"🔁 répéter 10 fois",couleur:"#E6A817"},{texte:"➡️ décaler LED de 1 rang à droite",couleur:"#9B72CF"}]},
+      {nom:"Mettre toutes les LED en rouge pendant 1 seconde", svg:"mettre_led_tous_couleurs_pendant_secondes.svg", desc:"Allume toutes les lumières en rouge pendant 1 seconde, puis les éteint automatiquement.", blocsExemple:[{texte:"🔴 toutes les LED en rouge - 1 sec",couleur:"#9B72CF"},{texte:"💚 toutes les LED en vert - 1 sec",couleur:"#9B72CF"}]},
+      {nom:"Mettre toutes les LED en rouge", svg:"mettre_led_rouge.svg", desc:"Allume toutes les lumières en rouge et les laisse allumées jusqu'à la suite du programme.", blocsExemple:[{texte:"🔴 toutes les LED en rouge",couleur:"#9B72CF"}]},
+      {nom:"Mettre les LED en R:255 G:0 B:0 pendant 1 sec", svg:"mettre_led_tous_r_g_b_pendant_seconde.svg", desc:"Mélange le Rouge, le Vert et le Bleu pour créer ta propre couleur ! R:255 G:0 B:0 = rouge, R:0 G:255 B:0 = vert.", blocsExemple:[{texte:"🎨 R:255 G:0 B:255 → VIOLET 💜 - 1 sec",couleur:"#9B72CF"},{texte:"🎨 R:0 G:255 B:0 → VERT 💚 - 1 sec",couleur:"#9B72CF"}]},
+      {nom:"Mettre les LED en R:255 G:0 B:0", svg:"mettre_led_tous_r_g_b.svg", desc:"Même chose mais les lumières restent allumées sans s'éteindre automatiquement.", blocsExemple:[{texte:"🎨 R:255 G:165 B:0 → ORANGE 🟠",couleur:"#9B72CF"}]},
+      {nom:"Augmenter la luminosité des LED de 10%", svg:"augmenter_luminosité_led_de.svg", desc:"Augmente la luminosité des LED. Elles brillent plus fort !", blocsExemple:[{texte:"☀️ augmenter luminosité LED de 30%",couleur:"#9B72CF"}]},
+      {nom:"Régler la luminosité à 30%", svg:"regler_luminosité_a.svg", desc:"Règle la luminosité des LED. 10% = lumière douce, 100% = plein phares !", blocsExemple:[{texte:"🌤️ régler luminosité à 50%",couleur:"#9B72CF"}]},
+      {nom:"Luminosité de la LED (%)", svg:"luminosité_de_la_led.svg", desc:"Donne un chiffre entre 0 et 100 qui indique la luminosité actuelle des LED.", blocsExemple:[{texte:"📊 luminosité LED = ???",couleur:"#9B72CF"}]},
+      {nom:"Éteindre toutes les LED", svg:"eteindre_la_led_tous.svg", desc:"Éteint toutes les LED du robot. Il fait noir !", blocsExemple:[{texte:"⬛ éteindre toutes les LED",couleur:"#9B72CF"}]},
+    ]
+  },
+  {
+    id:"affichage", icon:"🖥️", titre:"Affichage", couleur:"#7B4FA6",
+    couleur2:"#5c3080",
+    desc:"Affiche du texte, des chiffres et des dessins sur le petit écran du robot.",
+    blocs:[
+      {nom:"Afficher le texte et sauter une ligne", svg:"afficher_texte_sauter_ligne.svg", desc:"Écrit un texte sur l'écran et va automatiquement à la ligne suivante. Comme appuyer sur Entrée !", blocsExemple:[{texte:"📝 afficher 'Bonjour !'",couleur:"#7B4FA6"},{texte:"📝 afficher 'Je suis le mBot 2'",couleur:"#7B4FA6"}]},
+      {nom:"Afficher le texte (sans sauter de ligne)", svg:"afficher_texte.svg", desc:"Écrit du texte à la suite du précédent, sans changer de ligne.", blocsExemple:[]},
+      {nom:"Afficher un label à une position (taille pixels)", svg:"afficher_label_1_à_x_y_taille_pixels.svg", desc:"Place un texte exactement où tu veux sur l'écran en donnant les coordonnées X et Y.", blocsExemple:[{texte:"📌 label 'Score' → X:10 Y:5 taille 12px",couleur:"#7B4FA6"}]},
+      {nom:"Afficher un label centré (taille pixels)", svg:"afficher_label_1_à_centre_écran_taille_pixels.svg", desc:"Affiche un texte bien centré au milieu de l'écran.", blocsExemple:[{texte:"🎯 label 'GO !' → centré taille 16px",couleur:"#7B4FA6"}]},
+      {nom:"Graphique linéaire - ajouter une donnée", svg:"graphique_linéaire_ajouter_donnée.svg", desc:"Ajoute une nouvelle valeur sur un graphique en courbe. Parfait pour voir comment un chiffre change !", blocsExemple:[{texte:"📈 graphique linéaire → ajouter la vitesse",couleur:"#7B4FA6"}]},
+      {nom:"Graphique linéaire - définir l'espacement en pixels", svg:"graphique_linéaire_définir_espacement_a_pixels.svg", desc:"Règle l'espace entre chaque point du graphique en courbe.", blocsExemple:[]},
+      {nom:"Histogramme - ajouter une donnée", svg:"histogramme_ajouter_donnée.svg", desc:"Ajoute une barre sur un graphique en barres. Comme les graphiques qu'on fait en classe !", blocsExemple:[]},
+      {nom:"Tableau - ajouter à ligne/colonne", svg:"tableau_ajouter_a_ligne_colonne.svg", desc:"Remplit une case d'un tableau sur l'écran avec la valeur que tu choisis.", blocsExemple:[{texte:"📊 tableau → ligne 1, colonne 2 = 'OK'",couleur:"#7B4FA6"}]},
+      {nom:"Régler la couleur du pinceau en RGB", svg:"définir_couleur_pinceau_R_G_B.svg", desc:"Choisit la couleur du crayon pour dessiner sur l'écran du robot.", blocsExemple:[]},
+      {nom:"Écran à l'envers (-90°)", svg:"écran_vers_a_l'envers.svg", desc:"Tourne l'écran à l'envers. Utile si ton robot est installé dans le mauvais sens !", blocsExemple:[]},
+      {nom:"Effacer l'écran", svg:"effacer_écran.svg", desc:"Efface tout sur l'écran. C'est comme une gomme pour l'écran du robot !", blocsExemple:[{texte:"🗑️ effacer l'écran",couleur:"#7B4FA6"},{texte:"📝 afficher 'Nouveau message'",couleur:"#7B4FA6"}]},
+    ]
+  },
+  {
+    id:" detection de mouvement", icon:"🕹️", titre:"Détection de mouvement", couleur:"#E8943A",
+    couleur2:"#c4721f",
+    desc:"Détecte si ton robot bouge, se penche ou est secoué !",
+    blocs:[
+      {nom:"Piloter avec la sensibilité", svg:"piloter_sensibilite.svg", desc:"Le robot copie les mouvements de ta main ! Penche à gauche, il tourne à gauche. Comme une télécommande !", blocsExemple:[{texte:"🎮 piloter avec sensibilité 0.5",couleur:"#E8943A"}]},
+      {nom:"Incliné vers l'avant ?", svg:"incline_avant.svg", desc:"Répond OUI si le robot est penché vers l'avant, NON sinon.", blocsExemple:[{texte:"❓ si incliné vers l'avant ?",couleur:"#E6A817"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"signe vers le haut", svg:"signe-vers-haut.svg", desc:"", blocsExemple:[]},
+      {nom:"Force de secousse", svg:"force_secousse.svg", desc:"Mesure la force avec laquelle on secoue le robot. Plus tu secoues fort, plus le chiffre est grand !", blocsExemple:[{texte:"❓ si force de secousse > 5",couleur:"#E6A817"},{texte:"🔊 lire le son 'salut'",couleur:"#BB8FD8"}]},
+      {nom:"direction signe", svg:"direction-signe.svg", desc:"", blocsExemple:[]},
+      {nom:"vitesse de déplacement", svg:"vitesse-déplacement.svg", desc:"", blocsExemple:[]},
+      {nom:"Angle incliné vers l'avant (°)", svg:"angle_incline_avant.svg", desc:"Donne l'angle d'inclinaison du robot vers l'avant. 0° = posé à plat, 45° = penché, 90° = debout !", blocsExemple:[{texte:"📐 angle incliné = 0° → robot plat",couleur:"#E8943A"},{texte:"📐 angle incliné = 45° → penché",couleur:"#E8943A"}]},
+      {nom:"Accélération (m/s²) sur l'axe X", svg:"acceleration_axe_x.svg", desc:"Mesure l'accélération du robot sur le côté. Utile pour détecter des secousses ou des virages brusques.", blocsExemple:[]},
+      {nom:"Vitesse angulaire autour de l'axe X (°/s)", svg:"vitesse_angulaire_axe_x.svg", desc:"Mesure la vitesse de rotation du robot sur lui-même, comme une toupie !", blocsExemple:[]},
+      {nom:"Angle de rotation autour de l'axe X (°)", svg:"angle_rotation_axe_x.svg", desc:"Compte les degrés parcourus depuis que le programme a démarré. 360° = un tour complet !", blocsExemple:[]},
+      {nom:"Réinitialiser l'angle de rotation", svg:"reinitialiser_angle_rotation.svg", desc:"Remet l'angle de rotation à zéro. Comme remettre la montre à 0 !", blocsExemple:[{texte:"↩️ réinitialiser angle de rotation",couleur:"#E8943A"}]},
+      {nom:"réinitialiser langle de lacet", svg:"réinitialiser-angle-lacet.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"capteurs", icon:"👁️", titre:"Capteurs", couleur:"#E8943A",
+    couleur2:"#c4721f",
+    desc:"Lis ce que détectent les boutons, le joystick, le micro et le capteur de lumière de ton robot !",
+    blocs:[
+      {nom:"Joystick milieu appuyé ?", svg:"joystick_milieu_appuye.svg", desc:"Répond OUI si tu appuies sur le bouton du milieu du joystick, NON sinon.", blocsExemple:[{texte:"❓ si joystick milieu appuyé ?",couleur:"#E6A817"},{texte:"🌈 LED arc-en-ciel",couleur:"#9B72CF"}]},
+      {nom:"Nombre de mouvements du joystick", svg:"nombre_mouvements_joystick.svg", desc:"Compte combien de fois tu as bougé le joystick depuis le début du programme.", blocsExemple:[{texte:"🔢 nombre mouvements joystick = ???",couleur:"#E8943A"}]},
+      {nom:"réinitialiser nombre de mouvement du joystick", svg:"réinitialiser-nombre-mouvement-joystick.svg", desc:"", blocsExemple:[]},
+      {nom:"Bouton A pressé ?", svg:"bouton_a_presse.svg", desc:"Répond OUI si le bouton A est appuyé en ce moment, NON sinon.", blocsExemple:[{texte:"❓ si bouton A pressé ?",couleur:"#E6A817"},{texte:"🔊 lire le son 'salut' jusqu'à la fin",couleur:"#BB8FD8"}]},
+      {nom:"Nombre de pressions du bouton A", svg:"nombre_pressions_bouton_a.svg", desc:"Compte le nombre de fois où tu as appuyé sur le bouton A depuis le début.", blocsExemple:[{texte:"🔢 pressions bouton A = ???",couleur:"#E8943A"}]},
+      {nom:"réinitialiser le nombre de pression du bouton A", svg:"réinitialiser_nombre_pression_boutton_A.svg", desc:"", blocsExemple:[]},
+      {nom:"Volume sonore", svg:"volume_sonore.svg", desc:"Mesure le volume sonore autour du robot. 0 = silence total, 100 = très fort !", blocsExemple:[{texte:"❓ si volume sonore > 50",couleur:"#E6A817"},{texte:"💡 LED rouge",couleur:"#9B72CF"}]},
+      {nom:"Intensité de la lumière ambiante", svg:"intensite_lumiere_ambiante.svg", desc:"Mesure la luminosité autour du robot. Mets ta main dessus : le chiffre baisse ! Enlève-la : il remonte !", blocsExemple:[{texte:"❓ si lumière > 80",couleur:"#E6A817"},{texte:"🌈 LED arc-en-ciel",couleur:"#9B72CF"}]},
+      {nom:"Minuterie (s)", svg:"minuterie.svg", desc:"Donne le nombre de secondes qui se sont écoulées depuis que le programme a démarré.", blocsExemple:[{texte:"📊 minuterie = 5 s → ça fait 5 secondes !",couleur:"#E8943A"}]},
+      {nom:"Réinitialiser le chronomètre", svg:"reinitialiser_chronometre.svg", desc:"Remet le chronomètre à 0. Le compteur repart de zéro !", blocsExemple:[{texte:"↩️ réinitialiser le chronomètre",couleur:"#E8943A"}]},
+      {nom:"Nom de la machine", svg:"nom_machine.svg", desc:"", blocsExemple:[]},
+      {nom:"Niveau de batterie (%)", svg:"niveau_batterie.svg", desc:"Indique le niveau de batterie du robot. 100% = pleine, 0% = plus de batterie !", blocsExemple:[{texte:"❓ si batterie < 20%",couleur:"#E6A817"},{texte:"🔴 LED rouge (batterie faible !)",couleur:"#9B72CF"}]},
+      {nom:"Compétences en étape", svg:"compétence_en_etape.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"lan", icon:"📡", titre:"LAN (Réseau local)", couleur:"#00BCD4",
+    couleur2:"#0097a7",
+    desc:"Fais communiquer plusieurs robots entre eux via le WiFi !",
+    blocs:[
+      {nom:"Diffuser un message sur le LAN", svg:"diffuser_message_lan.svg", desc:"Envoie un message à tous les robots qui sont sur le même réseau. Comme envoyer un SMS à tout le monde !", blocsExemple:[{texte:"📢 diffuser 'démarre' sur le LAN",couleur:"#00BCD4"},{texte:"→ Robot 2 reçoit 'démarre' et avance !",couleur:"#3A9E6E"}]},
+      {nom:"Diffuser un message avec une valeur", svg:"diffuser_message_valeur_lan.svg", desc:"Envoie un message avec une valeur en plus. Par exemple 'vitesse' + le chiffre 50.", blocsExemple:[{texte:"📨 diffuser 'vitesse' avec valeur 50",couleur:"#00BCD4"}]},
+      {nom:"Quand le message est reçu", svg:"quand_message_recu_lan.svg", desc:"Lance des actions dès qu'un message précis est reçu d'un autre robot.", blocsExemple:[{texte:"📬 quand 'stop' est reçu",couleur:"#FFCC00"},{texte:"⏹️ arrêter tout",couleur:"#4ECDC4"}]},
+      {nom:"Valeur reçue du message", svg:"valeur_recue_message_lan.svg", desc:"Récupère le chiffre ou le texte qui a été envoyé avec le message.", blocsExemple:[{texte:"📊 valeur reçue de 'vitesse' = 50",couleur:"#00BCD4"}]},
+      {nom:"Régler le canal LAN à 6", svg:"regler_canal_lan.svg", desc:"Choisit le canal WiFi. Seuls les robots sur le même canal peuvent se parler !", blocsExemple:[{texte:"📻 canal LAN → 3 (pour mon groupe)",couleur:"#00BCD4"}]},
+    ]
+  },
+  {
+    id:"ai", icon:"🧠", titre:"IA (Intelligence Artificielle)", couleur:"#5CB85C",
+    couleur2:"#3d8b3d",
+    desc:"Connecte le robot à Internet pour lui faire parler, écouter et traduire !",
+    blocs:[
+      {nom:"Se connecter au WiFi", svg:"se_connecter_wifi.svg", desc:"Connecte le robot au WiFi de la maison ou de la classe. Il faut le nom du réseau et le mot de passe.", blocsExemple:[{texte:"📶 se connecter au WiFi 'MaBox' - 'monmotdepasse'",couleur:"#5CB85C"}]},
+      {nom:"Réseau connecté ?", svg:"reseau_connecte.svg", desc:"Répond OUI si le robot est bien connecté à Internet, NON sinon.", blocsExemple:[{texte:"❓ si réseau connecté ?",couleur:"#E6A817"},{texte:"🗣️ dire 'Je suis en ligne !'",couleur:"#5CB85C"}]},
+      {nom:"Se connecter à un nouveau WI-FI", svg:"connecter_nouveau_wifi.svg", desc:"", blocsExemple:[]},
+      {nom:"Se deconnecter du WI_FI", svg:"se_deconnecter_wifi.svg", desc:"", blocsExemple:[]},
+      {nom:"Parler automatiquement", svg:"parler_automatiquement.svg", desc:"Le robot lit le texte à voix haute ! Il parle vraiment !", blocsExemple:[{texte:"🗣️ parler : 'Bonjour, je suis le mBot 2 !'",couleur:"#5CB85C"}]},
+      {nom:"Reconnaître la voix pendant 3 secondes", svg:"reconnaitre_voix.svg", desc:"Le robot t'écoute pendant 3 secondes et essaie de reconnaître ce que tu dis.", blocsExemple:[{texte:"👂 reconnaître voix pendant 3 secondes",couleur:"#5CB85C"},{texte:"📝 résultat = ce que tu as dit",couleur:"#5CB85C"}]},
+      {nom:"Résultat de la reconnaissance vocale", svg:"resultat_reconnaissance_vocale.svg", desc:"Donne le texte de ce que le robot a entendu et compris.", blocsExemple:[{texte:"Tu dis 'avance' → résultat = 'avance'",couleur:"#5CB85C"}]},
+      {nom:"Traduire du texte", svg:"traduire_texte.svg", desc:"Traduit un texte dans la langue que tu choisis grâce à Internet !", blocsExemple:[{texte:"🌍 traduire 'Bonjour' en anglais → 'Hello'",couleur:"#5CB85C"}]},
+    ]
+  },
+  {
+    id:"iot", icon:"🌐", titre:"IoT (Internet des objets)", couleur:"#5CB85C",
+    couleur2:"#3d8b3d",
+    desc:"Connecte le robot à Internet pour envoyer et recevoir des infos depuis n'importe où !",
+    blocs:[
+      {nom:"Se connecter au WiFi", svg:"se_connecter_wifi.svg", desc:"Connecte le robot au WiFi pour accéder à Internet.", blocsExemple:[{texte:"📶 se connecter au WiFi 'MaBox'",couleur:"#5CB85C"}]},
+      {nom:"Réseau connecté ?", svg:"reseau_connecte.svg", desc:"Répond OUI si le robot est bien connecté à Internet, NON sinon.", blocsExemple:[]},
+      {nom:"Se connecter à un nouveau WI-FI", svg:"connecter_nouveau_wifi.svg", desc:"", blocsExemple:[]},
+      {nom:"Se deconnecter du WI_FI", svg:"se_deconnecter_wifi.svg", desc:"", blocsExemple:[]},
+      {nom:"Diffuser un message sur le cloud", svg:"diffuser_message_cloud.svg", desc:"Envoie un message sur Internet. Ton téléphone ou ta tablette peut le recevoir !", blocsExemple:[{texte:"☁️ diffuser 'alerte' sur le cloud",couleur:"#5CB85C"},{texte:"→ ton téléphone reçoit l'alerte !",couleur:"#3A9E6E"}]},
+      {nom:"Diffuser un message avec une valeur sur le cloud", svg:"diffuser_message_valeur_cloud.svg", desc:"Envoie un message avec une valeur sur Internet. Par exemple 'température' + 22.", blocsExemple:[{texte:"📤 diffuser 'température' avec valeur 25",couleur:"#5CB85C"}]},
+      {nom:"Quand un message cloud est reçu", svg:"quand_message_cloud_recu.svg", desc:"Lance des actions dès qu'un message arrive depuis Internet.", blocsExemple:[{texte:"📬 quand 'stop' reçu depuis Internet",couleur:"#FFCC00"},{texte:"⏹️ arrêter tout",couleur:"#4ECDC4"}]},
+      {nom:"valeur reçue du message diffusé par le cloud utilisateur", svg:"valeur_reçue_message_diffusé_cloud_utilisateur.svg", desc:"", blocsExemple:[]},
+      {nom:"Température la plus élevée (géolocalisation)", svg:"temperature_max_geo.svg", desc:"Donne la température maximale de ta ville aujourd'hui, récupérée sur Internet !", blocsExemple:[{texte:"🌡️ température max à Paris = 22°C",couleur:"#5CB85C"}]},
+      {nom:"Qualité de l'air (AQI)", svg:"qualite_air_aqi.svg", desc:"Donne la qualité de l'air de ta ville. 0 = air très pur, 500 = air très pollué.", blocsExemple:[{texte:"💨 qualité air = 25 → très bonne !",couleur:"#5CB85C"}]},
+      {nom:"Heure du lever du soleil", svg:"lever_soleil.svg", desc:"Donne l'heure du lever du soleil dans ta ville, récupérée sur Internet.", blocsExemple:[{texte:"🌅 lever du soleil à Paris = 7h23",couleur:"#5CB85C"}]},
+      {nom:"Recevoir année de 0 UTC", svg:"recevoir_année_de_0.svg", desc:"Donne la date et l'heure exactes récupérées depuis Internet.", blocsExemple:[{texte:"🕐 heure actuelle = 14h30",couleur:"#5CB85C"}]},
+      {nom:"Date et heure de 0 UTC", svg:"date_et_heure_de_0_UTC.svg", desc:"", blocsExemple:[]},
+      {nom:"année de la date et de l'heure", svg:"année_de_la_date_et_heure.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"evenements", icon:"⚡", titre:"Événements", couleur:"#FFCC00",
+    couleur2:"#e6b800",
+    desc:"Lance des actions automatiquement quand quelque chose se produit !",
+    blocs:[
+      {nom:"Lorsque CyberPi démarre", svg:"lorsque_cyberpi_démarre.svg", desc:"Tout ce qui suit ce bloc démarre automatiquement quand tu allumes le robot !", blocsExemple:[{texte:"🟢 lorsque CyberPi démarre",couleur:"#FFCC00"},{texte:"🗣️ dire 'Je suis prêt !'",couleur:"#5CB85C"},{texte:"💡 LED verte",couleur:"#9B72CF"}]},
+      {nom:"Quand le joystick est tiré vers le haut", svg:"joystick_tire_haut.svg", desc:"Lance des actions quand tu pousses le joystick dans une direction.", blocsExemple:[{texte:"⬆️ quand joystick tiré vers le haut",couleur:"#FFCC00"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"Lorsque le bouton A est pressé", svg:"bouton_a_presse_event.svg", desc:"Lance des actions dès que tu appuies sur le bouton A.", blocsExemple:[{texte:"🔘 lorsque bouton A pressé",couleur:"#FFCC00"},{texte:"🔊 lire le son 'salut'",couleur:"#BB8FD8"}]},
+      {nom:"Quand le robot démarre incliné à gauche", svg:"demarre_incline_gauche.svg", desc:"Lance des actions si le robot est incliné à gauche au démarrage.", blocsExemple:[{texte:"↙️ démarre incliné à gauche",couleur:"#FFCC00"},{texte:"🔴 LED rouge",couleur:"#9B72CF"}]},
+      {nom:"Lorsque le signe à gauche est détecté", svg:"signe_gauche_detecte.svg", desc:"Lance des actions quand tu fais un signe avec ta main vers la gauche devant le robot.", blocsExemple:[{texte:"👈 signe à gauche détecté",couleur:"#FFCC00"},{texte:"↰ tourner à gauche 90°",couleur:"#4AABDB"}]},
+      {nom:"Quand la lumière > 50", svg:"lumiere_superieure_50.svg", desc:"Lance des actions quand il fait très lumineux autour du robot.", blocsExemple:[{texte:"💡 quand lumière > 50",couleur:"#FFCC00"},{texte:"🌈 LED arc-en-ciel",couleur:"#9B72CF"}]},
+      {nom:"Lorsque vous cliquez sur le drapeau vert", svg:"clic_drapeau_vert.svg", desc:"Lance des actions quand tu cliques sur le bouton ▶ vert dans mBlock sur ton ordinateur.", blocsExemple:[{texte:"🚩 clic sur le drapeau vert",couleur:"#FFCC00"},{texte:"⚙️ avancer 100 cm",couleur:"#4AABDB"}]},
+      {nom:"Quand la touche espace est pressée", svg:"touche_espace_pressee.svg", desc:"Lance des actions quand tu appuies sur une touche du clavier de l'ordinateur.", blocsExemple:[{texte:"⌨️ touche [espace] pressée",couleur:"#FFCC00"},{texte:"⏹️ arrêter tout",couleur:"#4ECDC4"}]},
+      {nom:"Lorsque je reçois un message", svg:"reception_message.svg", desc:"Lance des actions quand une autre partie du programme envoie un message.", blocsExemple:[{texte:"📬 quand je reçois 'départ'",couleur:"#FFCC00"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"Diffuser un message", svg:"diffuser_message.svg", desc:"Envoie un message à toutes les autres parties de ton programme.", blocsExemple:[{texte:"📢 diffuser 'départ'",couleur:"#FFCC00"}]},
+      {nom:"Diffuser un message et attendre", svg:"diffuser_message_attendre.svg", desc:"Envoie un message et attend que tout soit terminé avant de continuer le programme.", blocsExemple:[{texte:"📨 diffuser 'danse' et attendre",couleur:"#FFCC00"},{texte:"🔊 lire le son 'bravo'",couleur:"#BB8FD8"}]},
+    ]
+  },
+  {
+    id:"controle", icon:"🔁", titre:"Contrôle", couleur:"#E6A817",
+    couleur2:"#c4880a",
+    desc:"Contrôle comment ton programme se déroule : répétitions, conditions, pauses...",
+    blocs:[
+      {nom:"Relancer CyberPi", svg:"relancer_cyber_py.svg", desc:"", blocsExemple:[]},
+      {nom:"inserer le code", svg:"inserer_le_code.svg", desc:"", blocsExemple:[]},
+      {nom:"Attendre 1 seconde", svg:"attendre_secondes.svg", desc:"Le programme s'arrête et attend le nombre de secondes que tu as choisi.", blocsExemple:[{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"},{texte:"⏸️ attendre 2 secondes",couleur:"#E6A817"},{texte:"↰ tourner à gauche 90°",couleur:"#4AABDB"}]},
+      {nom:"Si... alors", svg:"si_alors.svg", desc:"Fait quelque chose SEULEMENT SI la condition est vraie. Sinon, rien ne se passe.", blocsExemple:[{texte:"❓ SI bouton A appuyé",couleur:"#E6A817"},{texte:"🔊 ALORS jouer un son",couleur:"#BB8FD8"}]},
+      {nom:"Si... alors... sinon", svg:"si_alors_sinon.svg", desc:"Fait une chose si la condition est vraie, et une autre chose différente si elle est fausse.", blocsExemple:[{texte:"❓ SI lumière > 50",couleur:"#E6A817"},{texte:"💡 ALORS allumer LED",couleur:"#9B72CF"},{texte:"⬛ SINON éteindre LED",couleur:"#9B72CF"}]},
+      {nom:"Répéter tant que...", svg:"repeter_tant_que.svg", desc:"Répète des actions encore et encore tant que la condition est vraie.", blocsExemple:[{texte:"🔁 TANT QUE pas d'obstacle",couleur:"#E6A817"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"Répéter jusqu'à", svg:"repeter_jusqu_a.svg", desc:"Répète des actions jusqu'au moment où la condition devient vraie.", blocsExemple:[{texte:"🔁 répéter JUSQU'À obstacle détecté",couleur:"#E6A817"},{texte:"⚙️ avancer à 50 tr/min",couleur:"#4AABDB"}]},
+      {nom:"Pour toujours", svg:"pour_toujours.svg", desc:"Répète les actions pour toujours ! Le programme ne s'arrête jamais tout seul.", blocsExemple:[{texte:"♾️ pour toujours",couleur:"#E6A817"},{texte:"👁️ vérifier capteurs",couleur:"#E8943A"},{texte:"⚙️ réagir",couleur:"#4AABDB"}]},
+      {nom:"Compter avec i de 0 à 4", svg:"compter_i_de_0_a_4.svg", desc:"Répète des actions en comptant : i = 0, puis 1, puis 2... jusqu'à 4. Ça fait 5 tours en tout !", blocsExemple:[{texte:"🔢 pour i de 0 à 4",couleur:"#E6A817"},{texte:"🔊 jouer une note",couleur:"#BB8FD8"}]},
+      {nom:"Répéter 10 fois", svg:"repeter_10_fois.svg", desc:"Répète exactement le nombre de fois choisi les actions qui sont à l'intérieur.", blocsExemple:[{texte:"🔢 répéter 3 fois",couleur:"#E6A817"},{texte:"🌈 LED arc-en-ciel",couleur:"#9B72CF"}]},
+      {nom:"Pause", svg:"pause.svg", desc:"", blocsExemple:[]},
+      {nom:"continuer", svg:"continuer.svg", desc:"", blocsExemple:[]},
+      {nom:"Attendre jusqu'à", svg:"attendre_jusqu_a.svg", desc:"Le programme attend sans rien faire jusqu'à ce que la condition devienne vraie.", blocsExemple:[{texte:"⌛ attendre JUSQU'À bouton A pressé",couleur:"#E6A817"},{texte:"⚙️ avancer",couleur:"#4AABDB"}]},
+      {nom:"Arrêter tout", svg:"arreter_tout.svg", desc:"Arrête tout le programme immédiatement. Le robot s'arrête !", blocsExemple:[{texte:"❓ si bouton A pressé ?",couleur:"#E6A817"},{texte:"⏹️ arrêter tout",couleur:"#E6A817"}]},
+    ]
+  },
+  {
+    id:"operateurs", icon:"🔢", titre:"Opérateurs", couleur:"#59C059",
+    couleur2:"#3a9e3a",
+    desc:"Fais des calculs mathématiques et compare des nombres ou des textes.",
+    blocs:[
+      {nom:"convertir en entier", svg:"convertir_en.svg", desc:"", blocsExemple:[]},
+      {nom:"Addition (+)", svg:"addition.svg", desc:"Additionne deux nombres. Exemple : 5 + 3 = 8.", blocsExemple:[{texte:"➕ 5 + 3 = 8",couleur:"#59C059"}]},
+      {nom:"Soustraction (-)", svg:"soustraction.svg", desc:"Soustrait un nombre d'un autre. Exemple : 10 - 4 = 6.", blocsExemple:[{texte:"➖ 10 - 4 = 6",couleur:"#59C059"}]},
+      {nom:"Multiplication (*)", svg:"multiplication.svg", desc:"Multiplie deux nombres. Exemple : 3 × 4 = 12.", blocsExemple:[{texte:"✖️ 3 × 4 = 12",couleur:"#59C059"}]},
+      {nom:"Division (/)", svg:"division.svg", desc:"Divise un nombre par un autre. Exemple : 15 ÷ 3 = 5.", blocsExemple:[{texte:"➗ 15 ÷ 3 = 5",couleur:"#59C059"}]},
+      {nom:"Nombre aléatoire entre 1 et 10", svg:"nombre_aleatoire.svg", desc:"Choisit un nombre au hasard entre deux valeurs. Parfait pour des surprises !", blocsExemple:[{texte:"🎲 nombre aléatoire entre 1 et 6 → dé !",couleur:"#59C059"}]},
+      {nom:"Plus grand que (>)", svg:"plus_grand_que.svg", desc:"Vérifie si le premier nombre est plus grand que le deuxième. Répond VRAI ou FAUX.", blocsExemple:[{texte:"📏 60 > 50 → VRAI ✅",couleur:"#59C059"},{texte:"📏 30 > 50 → FAUX ❌",couleur:"#59C059"}]},
+      {nom:"Plus petit que (<)", svg:"plus_petit_que.svg", desc:"Vérifie si le premier nombre est plus petit que le deuxième. Répond VRAI ou FAUX.", blocsExemple:[{texte:"📏 20 < 50 → VRAI ✅",couleur:"#59C059"}]},
+      {nom:"Égal à (=)", svg:"egal_a.svg", desc:"Vérifie si deux valeurs sont exactement égales. Répond VRAI ou FAUX.", blocsExemple:[{texte:"📏 5 = 5 → VRAI ✅",couleur:"#59C059"},{texte:"📏 5 = 6 → FAUX ❌",couleur:"#59C059"}]},
+      {nom:"Et", svg:"et.svg", desc:"Vérifie que les DEUX conditions sont vraies en même temps. Si une seule est vraie, c'est FAUX.", blocsExemple:[{texte:"🤝 bouton A appuyé ET lumière > 50",couleur:"#59C059"},{texte:"→ les DEUX doivent être vrais !",couleur:"#59C059"}]},
+      {nom:"Ou", svg:"ou.svg", desc:"Vérifie qu'au moins UNE des deux conditions est vraie. Si les deux sont fausses, c'est FAUX.", blocsExemple:[{texte:"🔀 bouton A OU bouton B appuyé",couleur:"#59C059"},{texte:"→ au moins UN des deux suffit !",couleur:"#59C059"}]},
+      {nom:"Non (pas)", svg:"non_pas.svg", desc:"Inverse une condition ! Si c'était VRAI, ça devient FAUX. Si c'était FAUX, ça devient VRAI.", blocsExemple:[{texte:"❌ PAS (bouton appuyé) → tant que pas appuyé",couleur:"#59C059"}]},
+      {nom:"Joindre deux textes", svg:"joindre_textes.svg", desc:"Colle deux textes ensemble. Exemple : 'Bon' + 'jour' = 'Bonjour' !", blocsExemple:[{texte:"🔗 joindre 'Bonjour ' + 'monde' = 'Bonjour monde'",couleur:"#59C059"}]},
+      {nom:"Lettre 1 de pomme", svg:"lettre_de.svg", desc:"", blocsExemple:[]},
+      {nom:"Longueur d'un mot", svg:"longueur_mot.svg", desc:"Compte le nombre de lettres dans un mot. Exemple : 'chat' = 4 lettres.", blocsExemple:[{texte:"📏 longueur de 'chat' = 4 lettres",couleur:"#59C059"}]},
+      {nom:"Pomme comprend a", svg:"pomme_comprend.svg", desc:"", blocsExemple:[]},
+      {nom:"Modulo", svg:"modulo.svg", desc:"", blocsExemple:[]},
+      {nom:"Arrondir", svg:"arrondir.svg", desc:"Arrondit un nombre à virgule au nombre entier le plus proche. Exemple : 3,7 → 4.", blocsExemple:[{texte:"🔵 arrondir 3.6 → 4",couleur:"#59C059"},{texte:"🔵 arrondir 3.2 → 3",couleur:"#59C059"}]},
+      {nom:"Valeur absolue (abs)", svg:"valeur_absolue.svg", desc:"Enlève le signe moins. Exemple : -5 devient 5. La valeur absolue est toujours positive !", blocsExemple:[{texte:"📊 abs(-8) = 8",couleur:"#59C059"},{texte:"📊 abs(8) = 8",couleur:"#59C059"}]},
+    ]
+  },
+  {
+    id:"variables et listes", icon:"📦", titre:"Variables et listes", couleur:"#E8943A",
+    couleur2:"#c4721f",
+    desc:"Crée des boîtes pour stocker des informations et les réutiliser dans ton programme !",
+    blocs:[
+      {nom:"Créer une variable", svg:"creer_variable.svg", desc:"Crée une boîte avec un nom. Tu peux y mettre un chiffre ou un texte et le modifier quand tu veux !", blocsExemple:[{texte:"📦 créer variable 'score'",couleur:"#E8943A"},{texte:"score = 0 au départ",couleur:"#E8943A"},{texte:"score = score + 1 (à chaque point)",couleur:"#E8943A"}]},
+      {nom:"Exemple variable", svg:"exemple_variable.svg", desc:"", blocsExemple:[]},
+      {nom:"Définir exemple variable à 0", svg:"définir_exmeple_varaible_a.svg", desc:"", blocsExemple:[]},
+      {nom:"Ajouter 1 à Exemple varaible", svg:"ajouter_1_variable.svg", desc:"", blocsExemple:[]},
+      {nom:"montrer la variable exmple variable", svg:"montrer_variable_exmeplevariable.svg", desc:"", blocsExemple:[]},
+      {nom:"Cacher la varaible Exemple variable", svg:"cacher_variable.svg", desc:"", blocsExemple:[]},
+      {nom:"Créer une liste", svg:"creer_liste.svg", desc:"Crée une liste pour stocker plusieurs valeurs. Comme une liste de courses !", blocsExemple:[{texte:"📋 liste 'couleurs' = [rouge, bleu, vert]",couleur:"#E8943A"}]},
+      {nom:"Exemple liste", svg:"exemple_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Ajouter texte à Exemple liste", svg:"ajouter_texte_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Supprimer 1 de Exemple liste", svg:"supprimer_1_de_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Supprimer tout de Exemple liste", svg:"supprimer_tout_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"inserer texte à 1 de Exemple Liste", svg:"inserer_texte_de_chiffre_de_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Remplacer l'objet 1 de Exemple liste", svg:"remplacer_objet_1_de_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Objet 1 de Exemple liste", svg:"objet_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Objet# de texte dans Exemple liste", svg:"objet_texte_dans_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Longueur de Exemple liste", svg:"longueur_exmeple_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Exemple liste comprend texte", svg:"exemple_liste_comprend_texte.svg", desc:"", blocsExemple:[]},
+      {nom:"Afficher la liste Exemple liste", svg:"afficher__la_liste_liste.svg", desc:"", blocsExemple:[]},
+      {nom:"Masquer la liste Exemple liste", svg:"masquer_liste_liste.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"mes-blocs", icon:"🛠️", titre:"Mes blocs", couleur:"#E05A5A",
+    couleur2:"#b83030",
+    desc:"Invente tes propres blocs pour réutiliser facilement des séquences compliquées !",
+    blocs:[
+      {nom:"Créer un bloc personnalisé", svg:"creer_bloc_perso.svg", desc:"Groupe plusieurs actions dans un seul bloc. Ensuite utilise-le autant de fois que tu veux dans ton programme !", blocsExemple:[{texte:"✨ définir [danse]",couleur:"#E05A5A"},{texte:"⚙️ avancer 50 cm",couleur:"#4AABDB"},{texte:"↰ tourner gauche 90°",couleur:"#4AABDB"},{texte:"🔊 jouer son 'salut'",couleur:"#BB8FD8"}]},
+    ]
+  },
+  {
+    id:"moteurs", icon:"⚙️", titre:"Moteurs", couleur:"#4AABDB",
+    couleur2:"#2889b8",
+    desc:"Contrôle les roues de ton robot pour le faire avancer, reculer et tourner !",
+    blocs:[
+      {nom:"Avancer à 50 tr/min pendant 1 seconde", svg:"avancer_vitesse_duree.svg", desc:"Le robot avance pendant le temps choisi puis s'arrête. Plus le nombre tr/min est grand, plus il va vite !", blocsExemple:[{texte:"⬆️ avancer à 50 tr/min - 1 sec",couleur:"#4AABDB"},{texte:"↰ tourner gauche 90°",couleur:"#4AABDB"},{texte:"⬆️ avancer à 50 tr/min - 1 sec",couleur:"#4AABDB"}]},
+      {nom:"Avancer à 50 tr/min (sans s'arrêter)", svg:"avancer_vitesse.svg", desc:"Le robot avance sans s'arrêter. Il faudra un autre bloc pour le stopper.", blocsExemple:[{texte:"⬆️ avancer à 50 tr/min",couleur:"#4AABDB"},{texte:"⏸️ attendre 3 secondes",couleur:"#E6A817"},{texte:"⏹️ arrêter moteurs",couleur:"#4AABDB"}]},
+      {nom:"Avancer de 100 cm", svg:"avancer_distance.svg", desc:"Le robot avance exactement de la distance que tu choisis. 100 cm = 1 mètre !", blocsExemple:[{texte:"📏 avancer de 50 cm",couleur:"#4AABDB"},{texte:"↰ tourner gauche 90°",couleur:"#4AABDB"},{texte:"📏 avancer de 50 cm",couleur:"#4AABDB"}]},
+      {nom:"Tourner à gauche de 90°", svg:"tourner_gauche.svg", desc:"Le robot tourne d'un angle précis. 90° = un quart de tour, 180° = demi-tour, 360° = tour complet !", blocsExemple:[{texte:"⬆️ avancer de 100 cm",couleur:"#4AABDB"},{texte:"↰ tourner gauche 90°",couleur:"#4AABDB"},{texte:"(répéter 4 fois → carré !)",couleur:"#E6A817"}]},
+      {nom:"Moteur EM1 à 50 tr/min pendant 1 sec", svg:"moteur_em1_vitesse_duree.svg", desc:"Contrôle un seul moteur à la fois. Utile pour faire tourner une seule roue.", blocsExemple:[{texte:"⚙️ EM1 à 50 tr/min - 1 sec",couleur:"#4AABDB"}]},
+      {nom:"Le moteur encodeur EM1 tourne à 50 vitesse de rotation (tr/min)", svg:"moteur_encodeur_tourne_vitesse.svg", desc:"Contrôle un seul moteur à la fois. Utile pour faire tourner une seule roue.", blocsExemple:[{texte:"⚙️ EM1 à 50 tr/min - 1 sec",couleur:"#4AABDB"}]},
+      {nom:"Moteur EM1 tourne de 180°", svg:"moteur_em1_angle.svg", desc:"Fait tourner un moteur d'un angle exact. 360° = un tour complet du moteur.", blocsExemple:[{texte:"🔄 EM1 tourne de 360° (tour complet)",couleur:"#4AABDB"}]},
+      {nom:"EM1 et EM2 RPM et tourne à (tr/min)", svg:"em1_em2_vitesses.svg", desc:"Contrôle les 2 moteurs séparément. Si EM1 va plus vite que EM2, le robot tourne !", blocsExemple:[{texte:"⚙️ EM1=50 tr/min, EM2=25 tr/min → tourne doucement",couleur:"#4AABDB"}]},
+      {nom:"EM1 et EM2 tourne à % tourne à (tr/min)", svg:"em1_em2_pourcentage_vitesses.svg", desc:"Contrôle les 2 moteurs séparément. Si EM1 va plus vite que EM2, le robot tourne !", blocsExemple:[{texte:"⚙️ EM1=50 tr/min, EM2=25 tr/min → tourne doucement",couleur:"#4AABDB"}]},
+      {nom:"Arrêter tous les moteurs encodeurs", svg:"arreter_moteurs_encodeurs.svg", desc:"Stoppe les deux moteurs d'un coup. Frein d'urgence !", blocsExemple:[{texte:"⬆️ avancer à 50 tr/min",couleur:"#4AABDB"},{texte:"⌛ attendre jusqu'à obstacle",couleur:"#E6A817"},{texte:"⏹️ arrêter tous les moteurs",couleur:"#4AABDB"}]},
+      {nom:"EM1 du moteur encodeur vitesse de rotation", svg:"EM1_moteur_encodeur_vitesse-rotation.svg", desc:"", blocsExemple:[]},
+      {nom:"Angle de rotation du moteur encodeur", svg:"angle_rotation_moteur_encodeur.svg", desc:"", blocsExemple:[]},
+      {nom:"Réinitialiser l'angle de rotation du moteur encodeur EM1", svg:"réinitialiser_angle_moteur_encodeur.svg", desc:"", blocsExemple:[]},
+      {nom:"Verrouillage automatique du moteur encodeur EM1", svg:"verrouillage_automatique_moteur_encodeur.svg", desc:"", blocsExemple:[]},
+      {nom:"Calibrer les paramètres du châssis", svg:"calibrer_chassis.svg", desc:"Calibre les moteurs pour que le robot avance parfaitement droit.", blocsExemple:[{texte:"⚙️ calibrer les paramètres du châssis",couleur:"#4AABDB"}]},
+    ]
+  },
+  {
+    id:"ports", icon:"🔌", titre:"Ports mBot2", couleur:"#4AABDB",
+    couleur2:"#2889b8",
+    desc:"Contrôle les accessoires que tu branches sur les ports de ton robot.",
+    blocs:[
+      {nom:"Tous les moteurs à 50%", svg:"tous_moteurs_pourcent.svg", desc:"Tous les moteurs fonctionnent à 50% de leur puissance. Allure modérée !", blocsExemple:[{texte:"⚙️ tous les moteurs à 50%",couleur:"#4AABDB"}]},
+      {nom:"Régler M1 à 50% et M2 à 50%", svg:"regler_m1_m2.svg", desc:"Règle la puissance de chaque moteur séparément en pourcentage.", blocsExemple:[{texte:"⚙️ M1=100% et M2=50% → tourne à droite",couleur:"#4AABDB"}]},
+      {nom:"Puissance de rotation du moteur M1 %", svg:"puissance_moteur_%.svg", desc:"", blocsExemple:[]},
+      {nom:"Arrêter tous les moteurs et M2 à 50%", svg:"regler_m1_m2.svg", desc:"Règle la puissance de chaque moteur séparément en pourcentage.", blocsExemple:[{texte:"⚙️ M1=100% et M2=50% → tourne à droite",couleur:"#4AABDB"}]},
+      {nom:"Arrêter tous les moteurs", svg:"arreter_tous_moteurs.svg", desc:"Arrête tous les moteurs branchés sur les ports du robot.", blocsExemple:[{texte:"⏹️ arrêter tous les moteurs",couleur:"#4AABDB"}]},
+      {nom:"Régler l'angle du servo à 90°", svg:"regler_angle_servo.svg", desc:"Place le servo-moteur à l'angle exact que tu choisis. 0° = tout à gauche, 90° = centre, 180° = tout à droite.", blocsExemple:[{texte:"📐 servo S1 → 0° (gauche)",couleur:"#4AABDB"},{texte:"⏸️ attendre 1 seconde",couleur:"#E6A817"},{texte:"📐 servo S1 → 180° (droite)",couleur:"#4AABDB"}]},
+      {nom:"Augmenter l'angle du servo de 10°", svg:"augmenter_angle_servo.svg", desc:"Tourne le servo d'un petit angle supplémentaire à chaque fois.", blocsExemple:[{texte:"🔄 servo S1 + 10° à chaque fois",couleur:"#4AABDB"}]},
+      {nom:"Définir l'angle du servo S1,S2,S3,S4", svg:"définir_angle_du_servo.svg", desc:"", blocsExemple:[]},
+      {nom:"Servo S1 angle actuel °", svg:"servo_actuel.svg", desc:"", blocsExemple:[]},
+      {nom:"Servo tous angle de déclachement", svg:"servo_angle_déclanchement.svg", desc:"", blocsExemple:[]},
+      {nom:"Servo tout retourne à la position", svg:"servo_tout_retourne_a_position.svg", desc:"", blocsExemple:[]},
+      {nom:"Bande LED - allumer en couleur", svg:"bande_led_couleur.svg", desc:"Allume toute la bande de LED avec la couleur que tu veux.", blocsExemple:[{texte:"🌈 bande LED → violet",couleur:"#4AABDB"}]},
+      {nom:"La bande LED tout LED tout affiche une couleur", svg:"bande_led_affiche_une_couleur.svg", desc:"", blocsExemple:[]},
+      {nom:"Bande LED - afficher R:255 V:0 B:0", svg:"bande_led_rgb.svg", desc:"Allume la bande en mélangeant Rouge, Vert et Bleu. R:255 G:0 B:0 = rouge, R:0 G:0 B:255 = bleu !", blocsExemple:[{texte:"🎨 R:255 V:165 B:0 → ORANGE 🟠",couleur:"#4AABDB"}]},
+      {nom:"Bande LED tout fait bouger LEDs avec le cycle", svg:"bande_led_fais_bouger_avec_cycle.svg", desc:"", blocsExemple:[]},
+      {nom:"Éteindre la bande LED", svg:"eteindre_bande_led.svg", desc:"Éteint complètement la bande de LED.", blocsExemple:[{texte:"⬛ éteindre la bande LED",couleur:"#4AABDB"}]},
+      {nom:"Augmenter la luminosité de % de la bande LED tout", svg:"augmenter_luminosité_bande_LED.svg", desc:"", blocsExemple:[]},
+      {nom:"Mettre la luminosité à  30% de la bande LED tout", svg:"mettre_luminosité_%_bande_tout.svg", desc:"", blocsExemple:[]},
+      {nom:"Luminosité de la bande LED S1 %", svg:"luminosité_bande_LED_%.svg", desc:"", blocsExemple:[]},
+      {nom:"Broche S1 au niveau haut ?", svg:"broche_S1_niveau_haut.svg", desc:"", blocsExemple:[]},
+      {nom:"Lire l'état logique de la pin", svg:"lire_etat_pin.svg", desc:"Lit l'état d'une broche : 0 = éteint, 1 = allumé. Utile pour détecter des capteurs simples.", blocsExemple:[{texte:"📊 pin S1 = 0 ou 1 ?",couleur:"#4AABDB"}]},
+      {nom:"Tension de la pin en volts", svg:"tension_pin.svg", desc:"Mesure la tension en volts sur une broche. Les broches du robot fonctionnent en 3,3V ou 5V.", blocsExemple:[{texte:"⚡ tension pin S1 = 3.3V",couleur:"#4AABDB"}]},
+      {nom:"Mettre l'état logique de la pin tout sur 1", svg:"mettre_état_logique_pin.svg", desc:"", blocsExemple:[]},
+      {nom:"Ecrire sur la pin analogique otut, rapport cyclique %, fréquence Hz", svg:"ecrire_sur_la_pin_analogique.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"capteur-rgb", icon:"🌈", titre:"Capteur Quad RGB", couleur:"#3A9E6E",
+    couleur2:"#2a7550",
+    desc:"Détecte les lignes noires et les couleurs au sol. Parfait pour suivre une ligne !",
+    blocs:[
+      {nom:"État de L1 et R1 en mode ligne = 00 ?", svg:"etat_ligne_l1_r1.svg", desc:"Vérifie si les capteurs voient une ligne. 00 = pas de ligne, 11 = ligne des deux côtés !", blocsExemple:[{texte:"❓ si état ligne = 11 ?",couleur:"#E6A817"},{texte:"⬆️ avancer tout droit",couleur:"#4AABDB"}]},
+      {nom:"état de L1 et R1 en mode  ligne (0 environ égale à 3)", svg:"état_L1_L2_environ_égale.svg", desc:"", blocsExemple:[]},
+      {nom:"Ligne statut = 0000", svg:"ligne_statut_0000.svg", desc:"", blocsExemple:[]},
+      {nom:"Ligne statut entre 0 et 15", svg:"ligne_statut_entre_0et15.svg", desc:"", blocsExemple:[]},
+      {nom:"Sonde R2 détecte ligne ?", svg:"sonde_R2_détecte_ligne.svg", desc:"", blocsExemple:[]},
+      {nom:"Sonde R2 détecte valeur R de l'objet", svg:"sonde_R2_détecte_valeur_objet.svg", desc:"", blocsExemple:[]},
+      {nom:"Écart mesuré (-100 à 100)", svg:"ecart_mesure.svg", desc:"Donne la position de la ligne. 0 = ligne au centre, -50 = ligne à gauche, +50 = ligne à droite.", blocsExemple:[{texte:"📏 écart = -20 → ligne un peu à gauche",couleur:"#3A9E6E"},{texte:"→ tourner légèrement à gauche !",couleur:"#4AABDB"}]},
+      {nom:"Définir la couleur à détecter", svg:"definir_couleur_detecter.svg", desc:"Dis au robot quelle couleur il doit détecter sur le sol.", blocsExemple:[{texte:"🎯 détecter R:255 G:0 B:0 (rouge) tolérance 50",couleur:"#3A9E6E"}]},
+      {nom:"Définir la couleur de la lumière du capteur à (vert)", svg:"définir_couleur_capteur_RGB.svg", desc:"", blocsExemple:[]},
+      {nom:"Eteindre la lumière de remplissage", svg:"Eteindre_lumière_emplissage.svg", desc:"", blocsExemple:[]},
+      {nom:"Définir la couleur R G B avec tolérence 50", svg:"definir_couleur_R_G_B_ave_tolerence.svg", desc:"", blocsExemple:[]},
+      {nom:"Effectuer la calibration", svg:"effectuer_calibration.svg", desc:"Calibre le capteur en lui apprenant les couleurs blanc et noir pour mieux détecter les lignes.", blocsExemple:[{texte:"⚙️ calibration : pose sur blanc puis sur noir",couleur:"#3A9E6E"}]},
+      {nom:"Definit le mode de detection des couleurs à standard", svg:"definit_mode_detection_couleurs_standard.svg", desc:"", blocsExemple:[]},
+    ]
+  },
+  {
+    id:"ultrason", icon:"📡", titre:"Capteur Ultrason", couleur:"#3A9E6E",
+    couleur2:"#2a7550",
+    desc:"Mesure la distance avec les obstacles et détecte ce qui est devant le robot !",
+    blocs:[
+      {nom:"Distance jusqu'à l'objet (cm)", svg:"distance_objet.svg", desc:"Mesure la distance en centimètres entre le robot et l'obstacle devant lui. Comme un radar !", blocsExemple:[{texte:"❓ si distance < 20 cm → obstacle proche !",couleur:"#E6A817"},{texte:"⏹️ arrêter les moteurs",couleur:"#4AABDB"}]},
+      {nom:"Hors de portée ?", svg:"hors_portee.svg", desc:"Répond OUI s'il n'y a rien devant le robot, NON s'il y a un obstacle.", blocsExemple:[{texte:"❓ si hors de portée ?",couleur:"#E6A817"},{texte:"⬆️ avancer en sécurité",couleur:"#4AABDB"}]},
+      {nom:"Régler la lumière ambiante à 50%", svg:"regler_lumiere_ambiante.svg", desc:"Allume les petites LED décoratives du capteur ultrason !", blocsExemple:[{texte:"💡 lumière ultrason à 100%",couleur:"#3A9E6E"}]},
+      {nom:"augmenter la lumière ambiante tout de %", svg:"augmenter_lumière_ambiante%.svg", desc:"", blocsExemple:[]},
+      {nom:"Luminosité de la lumière ambiante", svg:"luminosité_lumière_ambiante.svg", desc:"", blocsExemple:[]},
+      {nom:"Éteindre la lumière ambiante", svg:"eteindre_lumiere_ambiante.svg", desc:"Éteint les petites LED du capteur ultrason.", blocsExemple:[{texte:"⬛ éteindre lumière ultrason",couleur:"#3A9E6E"}]},
+      {nom:"Afficher l'émotion en veille", svg:"emotion_veille.svg", desc:"Les yeux LED du capteur ultrason affichent une expression endormie. Trop mignon ! 😴", blocsExemple:[{texte:"😴 ultrason affiche émotion 'en veille'",couleur:"#3A9E6E"}]},
+    ]
+  },
+];
+
+// ── RECHERCHE ──
+var rechercheInput   = document.getElementById('rechercheInput');
+var rechercheEffacer = document.getElementById('rechercheEffacer');
+var resultatsZone    = document.getElementById('resultatsZone');
+var resultatsGrille  = document.getElementById('resultatsGrille');
+var resultatsVide    = document.getElementById('resultatsVide');
+var gridEl           = document.getElementById('grid');
+var categoriesTitre  = document.getElementById('categoriesTitre');
+
+rechercheInput.addEventListener('input', () => {
+  var terme = rechercheInput.value.trim();
+  rechercheEffacer.classList.toggle('visible', terme.length > 0);
+  if (terme.length < 2) {
+    resultatsZone.classList.remove('visible');
+    gridEl.style.display = '';
+    categoriesTitre.style.display = '';
+    return;
+  }
+  gridEl.style.display = 'none';
+  categoriesTitre.style.display = 'none';
+  resultatsZone.classList.add('visible');
+  var tl = terme.toLowerCase();
+  var res = [];
+  categories.forEach(cat => cat.blocs.forEach((bloc,i) => {
+    if (bloc.nom.toLowerCase().includes(tl) || bloc.desc.toLowerCase().includes(tl)) res.push({cat,bloc,index:i});
+  }));
+  document.getElementById('resultats-titre').textContent = res.length > 0
+    ? `✨ ${res.length} bloc${res.length>1?'s':''} trouvé${res.length>1?'s':''} pour "${terme}" !` : '';
+  resultatsVide.style.display = res.length === 0 ? 'block' : 'none';
+  resultatsGrille.innerHTML = res.map(({cat,bloc,index}) => {
+    var nom = bloc.nom.replace(new RegExp(`(${terme.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
+    return `<div class="resultat-item" style="--rc:${cat.couleur};border-left:4px solid ${cat.couleur}" onclick="ouvrirDepuisRecherche('${cat.id}',${index})">
+      <span class="resultat-cat-badge">${cat.icon}</span>
+      <div class="resultat-infos"><div class="resultat-nom">${nom}</div><div class="resultat-cat">${cat.titre}</div></div>
+      <span class="resultat-fleche">👆</span></div>`;
+  }).join('');
+});
+function effacerRecherche() { rechercheInput.value=''; rechercheInput.dispatchEvent(new Event('input')); rechercheInput.focus(); }
+function ouvrirDepuisRecherche(catId, i) {
+  var cat = categories.find(c=>c.id===catId);
+  if (!cat) return;
+  currentCat = cat; currentBlocIndex = i;
+  afficherFlashcard();
+  document.getElementById('flashcardOverlay').classList.add('open');
+}
+
+// ── PARAMÈTRES ──
+function changerMode() {
+  var clair = document.getElementById('toggleSombre').checked;
+  document.body.classList.toggle('clair', clair);
+  localStorage.setItem('mode', clair ? 'clair' : 'sombre');
+}
+function ouvrirParams()    { document.getElementById('paramsOverlay').classList.add('open'); }
+function fermerParamsBtn() { document.getElementById('paramsOverlay').classList.remove('open'); }
+function fermerParams(e)   { if (e.target===document.getElementById('paramsOverlay')) fermerParamsBtn(); }
+(function() {
+  var mode = localStorage.getItem('mode');
+  if (mode === 'clair') {
+    document.body.classList.add('clair');
+    document.getElementById('toggleSombre').checked = true;
+  }
+})();
+
+// ── ÉTAT ──
+var currentCat = null;
+var currentBlocIndex = 0;
+
+// ── GRILLE CATÉGORIES ──
+var grid = document.getElementById('grid');
+categories.forEach(cat => {
+  var card = document.createElement('div');
+  card.className = 'cat-card';
+  card.style.setProperty('--accent', cat.couleur);
+  card.innerHTML = `<span class="cat-icon">${cat.icon}</span><h3>${cat.titre}</h3><p>${cat.desc}</p><span class="cat-badge">${cat.blocs.length} blocs</span>`;
+  card.onclick = () => ouvrirCategorie(cat);
+  grid.appendChild(card);
+});
+
+// ── VUE CATÉGORIE ──
+function ouvrirCategorie(cat) {
+  currentCat = cat;
+  currentBlocIndex = -1;
+
+  // Cacher le contenu mbot2, afficher la vue catégorie
+  document.getElementById('vue-mbot2').style.display = 'none';
+  document.getElementById('vue-categorie').style.display = 'block';
+  document.getElementById('btnRetour').classList.add('visible');
+  document.body.classList.add('vue-mbot2-active');
+
+  // Header
+  document.getElementById('catVueIcon').textContent = cat.icon;
+  document.getElementById('catVueTitre').textContent = cat.titre;
+
+  // Colonne gauche : liste des blocs
+  var colBlocs = document.getElementById('colBlocs');
+  colBlocs.innerHTML = cat.blocs.map((bloc, i) => {
+    var contenu = bloc.svg
+      ? `<img src="images/${bloc.svg}" alt="${bloc.nom}">`
+      : `<span class="bloc-fake">${bloc.nom}</span>`;
+    return `<div class="bloc-vignette" id="vignette-${i}" style="background:${cat.couleur}" onclick="afficherFiche(${i})">${contenu}</div>`;
+  }).join('');
+
+  // Colonne droite : vide au départ
+  document.getElementById('colFiche').innerHTML = `
+    <div class="fiche-vide">
+      <span class="fiche-vide-icon">👈</span>
+      <p>Clique sur un bloc<br>pour voir sa fiche !</p>
+    </div>`;
+
+  window.scrollTo(0,0);
+}
+
+function afficherFiche(index) {
+  currentBlocIndex = index;
+  var bloc = currentCat.blocs[index];
+  var cat  = currentCat;
+
+  // Marquer le bloc actif dans la colonne gauche
+  document.querySelectorAll('.bloc-vignette').forEach(el => el.classList.remove('actif'));
+  var vignetteActif = document.getElementById('vignette-' + index);
+  if (vignetteActif) vignetteActif.classList.add('actif');
+
+  // Construire la fiche
+  var exempleHTML = '';
+  if (bloc.blocsExemple && bloc.blocsExemple.length > 0) {
+    var blocsHTML = bloc.blocsExemple.map((b, i) => {
+      var cls = i===0 ? 'premier' : 'interieur';
+      return `<div class="bloc-empile ${cls}" style="background:${b.couleur||cat.couleur}">${b.texte}</div>`;
+    }).join('');
+    exempleHTML = `<div class="fiche-exemple-titre">🧩 Exemple</div><div class="blocs-empiles">${blocsHTML}</div>`;
+  }
+
+  var blocVisuel = bloc.svg
+    ? `<img src="images/${bloc.svg}" alt="${bloc.nom}">`
+    : `<div class="fiche-bloc-fake" style="background:${cat.couleur}">${bloc.nom}</div>`;
+
+  var descHTML = bloc.desc
+    ? `<div class="fiche-explication" style="--fc-color:${cat.couleur}">
+        <div class="fiche-explication-titre">✳ Explication simple</div>
+        <p>${bloc.desc}</p>
+       </div>`
+    : '';
+
+  document.getElementById('colFiche').innerHTML = `
+    <div class="fiche" style="--fc-color:${cat.couleur}; border-top-color:${cat.couleur}">
+      <div class="fiche-bloc">${blocVisuel}</div>
+      ${descHTML}
+      ${exempleHTML}
+    </div>`;
+}
+
+function fermerCategorie() {
+  document.getElementById('vue-categorie').style.display = 'none';
+  document.getElementById('vue-mbot2').style.display = 'block';
+  document.body.classList.add('vue-mbot2-active');
+  window.scrollTo(0,0);
+}
+
+// Recherche : ouvrir fiche directement
+function ouvrirDepuisRecherche(catId, i) {
+  var cat = categories.find(c=>c.id===catId);
+  if (!cat) return;
+  ouvrirCategorie(cat);
+  afficherFiche(i);
+  // Scroll to the bloc in left column
+  setTimeout(() => {
+    var el = document.getElementById('vignette-' + i);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape' && document.getElementById('vue-categorie').style.display === 'block') {
+    fermerCategorie();
+  }
+});
+
+</script>
+
+</body>
+</html>
