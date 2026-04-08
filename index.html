@@ -84,11 +84,12 @@
         .col-fiche { overflow-y: auto; padding: 40px; display: flex; justify-content: center; background: rgba(255,255,255,0.02); }
 
         /* FICHE MÉMO */
-        .fiche { 
-            background: #1a1a2e; border-radius: 25px; padding: 35px; 
-            max-width: 550px; width: 100%; border-top: 10px solid var(--accent);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-            animation: slideIn 0.3s ease-out;
+            .fiche img {
+                    height: 50px; /* Même hauteur que les vignettes de gauche */
+                    width: auto;
+                    max-width: 100%;
+                    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));
+}
         }
         @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         body.clair .fiche { background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); color: #333; }
@@ -98,13 +99,29 @@
         .explication-titre { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; letter-spacing: 1px; }
 
         .bloc-vignette { 
-            padding: 9px 12px; border-radius: 11px; 
-            cursor: pointer; transition: 0.2s; background: var(--cat-color);
-            display: flex; align-items: center; justify-content: center;
-            min-height: 48px;
+                    padding: 15px; /* Un peu plus d'espace */
+                    border-radius: 12px; 
+                    cursor: pointer; 
+                    transition: 0.2s; 
+                    background: var(--cat-color);
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center;
+                    min-height: 80px; /* On augmente la hauteur minimale */
+                    width: 100%;
+                    max-width: 300px; /* Pour éviter qu'ils soient trop larges */
+                    margin: 0 auto; /* Centrage */
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
         }
         .bloc-vignette:hover { transform: translateX(8px); filter: brightness(1.15); }
-        .bloc-vignette img { max-width: 100%; max-height: 52px; height: auto; width: auto; pointer-events: none; }
+        .bloc-vignette img { 
+                    height: 50px; /* Taille fixe identique pour tous */
+                    width: auto; 
+                    max-width: 100%; 
+                    pointer-events: none; 
+                    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+}
 
         .btn-theme { position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 15px; cursor: pointer; border-radius: 50%; border: none; font-size: 1.5rem; background: var(--accent); color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
