@@ -11,7 +11,7 @@
             --bg: #000000; 
             --texte: #e8e8f0; 
             --accent: #764ba2; 
-            --bloc-size: 50px; /* Ajout pour le zoom */
+            --bloc-size: 50px; 
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -78,10 +78,6 @@
         #vue-categorie { display: none; height: 100vh; grid-template-rows: auto 1fr; }
         .cat-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); }
         
-        /* Zoom Styles */
-        .zoom-controls { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.1); padding: 8px 20px; border-radius: 50px; color: white; }
-        .zoom-slider { cursor: pointer; accent-color: var(--accent); width: 100px; }
-
         .btn-retour { 
             padding: 10px 20px; border-radius: 50px; border: 2px solid var(--accent);
             background: #fff; color: var(--accent); cursor: pointer; font-weight: 800;
@@ -103,13 +99,11 @@
         }
         .bloc-vignette:hover { transform: translateX(8px); filter: brightness(1.15); }
         
-        /* Application du Zoom sur les images */
         .bloc-vignette img, .fiche img { 
             height: var(--bloc-size); 
             width: auto; 
             max-width: 100%; 
             pointer-events: none; 
-            transition: height 0.1s ease-out;
             filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
         }
 
