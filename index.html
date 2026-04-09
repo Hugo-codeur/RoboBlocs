@@ -6,7 +6,7 @@
     <title>RoboBlocs 🤖 | Guide de Programmation</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* --- DESIGN GLOBAL --- */
+        /* --- DESIGN GLOBAL (CONSERVÉ) --- */
         :root { --bg: #000000; --texte: #e8e8f0; --accent: #764ba2; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -20,106 +20,172 @@
 
         body.clair { --bg: #ffffff; --texte: #2D2D2D; }
 
-        /* --- VUE PORTAIL --- */
-        #vue-portail { display: flex; flex-direction: column; align-items: center; padding: 60 :20px; }
-        .logo-titre { font-family: 'Fredoka One', cursive; font-size: 3.5rem; margin-bottom: 40px; text-align: center; }
-
-        /* Remplacement de l'image par un Emoji stylisé */
-        .robot-placeholder {
-            font-size: 80px;
-            background: rgba(255,255,255,0.1);
-            width: 150px;
-            height: 150px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        /* --- VUE PORTAIL (CHOIX ROBOT) --- */
+        #vue-portail { display: flex; flex-direction: column; align-items: center; padding: 60px 20px; }
+        .logo-titre { 
+            font-family: 'Fredoka One', cursive; 
+            font-size: clamp(3rem, 10vw, 5rem); 
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); 
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
         }
-
-        .btn-robot {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 40px 60px;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: transform 0.3s;
-            text-align: center;
-            border: none;
-            color: white;
-        }
-        .btn-robot:hover { transform: scale(1.05); }
-
-        /* --- VUE MBOT2 (LISTE) --- */
-        #vue-mbot2 { display: none; padding: 40px 20px; }
-        .grid-categories { 
+        .logo-sous-titre { margin-top: 10px; font-weight: 700; color: #888; }
+        .robots-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-            gap: 25px; 
-            max-width: 1200px; 
-            margin: 0 auto; 
+            gap: 30px; width: 100%; max-width: 800px; margin-top: 40px; 
         }
-        .cat-card {
-            padding: 30px;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: 0.3s;
+        .robot-card { 
+            background: #fff; border-radius: 25px; padding: 30px; text-align: center; 
+            color: #333; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             position: relative;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.1);
         }
-        .cat-card:hover { transform: translateY(-10px); }
+        .robot-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(102,126,234,0.2); }
+        .robot-img { width: 150px; height: 150px; object-fit: contain; margin-bottom: 15px; border-radius: 15px; }
 
-        /* --- VUE DÉTAIL --- */
-        #vue-categorie { display: none; padding: 40px 20px; max-width: 900px; margin: 0 auto; }
-        .fiche-bloc {
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
+        /* --- INTERFACE MBOT 2 --- */
+        #vue-mbot2 { display: none; padding-bottom: 50px; }
+        header { text-align: center; padding: 40px 20px; position: relative; }
+        .header-robot { width: 180px; animation: bounce 2s infinite ease-in-out; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3)); }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+        /* RECHERCHE */
+        .recherche-zone { max-width: 600px; margin: 20px auto; padding: 0 20px; }
+        .recherche-box { 
+            display: flex; background: #fff; padding: 15px 25px; 
+            border-radius: 50px; align-items: center; gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .fiche-explication { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-top: 15px; }
-        .explication-titre { font-weight: 800; color: #ffcc00; margin-bottom: 8px; text-transform: uppercase; font-size: 0.9rem; }
+        .recherche-input { border: none; outline: none; width: 100%; font-size: 1.1rem; font-weight: 700; color: #333; }
 
-        /* --- BARRE DE RECHERCHE & THEME --- */
-        .controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
-        input { padding: 12px 25px; border-radius: 30px; border: none; width: 300px; font-size: 1rem; }
-        .btn-theme { padding: 12px; border-radius: 50%; cursor: pointer; border: none; background: #fff; color: #000; }
+        /* GRILLE CATÉGORIES */
+        .grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
+            gap: 25px; max-width: 1100px; margin: 40px auto; padding: 0 20px; 
+        }
+        .cat-card { 
+            padding: 30px; border-radius: 20px; text-align: center; color: #fff; 
+            cursor: pointer; transition: 0.3s; box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+        .cat-card:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+        /* VUE CATÉGORIE DÉTAILLÉE */
+        #vue-categorie { display: none; height: 100vh; grid-template-rows: auto 1fr; }
+        .cat-header { padding: 20px; display: flex; align-items: center; gap: 20px; background: rgba(0,0,0,0.2); }
+        .btn-retour { 
+            padding: 10px 20px; border-radius: 50px; border: 2px solid var(--accent);
+            background: #fff; color: var(--accent); cursor: pointer; font-weight: 800;
+            transition: 0.2s;
+        }
+        .btn-retour:hover { background: var(--accent); color: #fff; }
+        
+        .cat-body { display: grid; grid-template-columns: 350px 1fr; overflow: hidden; }
+        .col-blocs { overflow-y: auto; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 10px; }
+        .col-fiche { overflow-y: auto; padding: 40px; display: flex; justify-content: center; background: rgba(255,255,255,0.02); }
+
+        /* FICHE MÉMO */
+        .fiche { 
+            background: #1a1a2e; border-radius: 25px; padding: 35px; 
+            max-width: 550px; width: 100%; border-top: 10px solid var(--accent);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        body.clair .fiche { background: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.1); color: #333; }
+        
+        .fiche-explication { margin: 20px 0; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 15px; border-left: 5px solid var(--accent); }
+        body.clair .fiche-explication { background: #f4f4f4; }
+        .explication-titre { font-size: 0.8rem; font-weight: 900; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; letter-spacing: 1px; }
+
+        .bloc-vignette { 
+            padding: 9px 12px; border-radius: 11px; 
+            cursor: pointer; transition: 0.2s; background: var(--cat-color);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 48px;
+        }
+        .bloc-vignette:hover { transform: translateX(8px); filter: brightness(1.15); }
+        .bloc-vignette img { max-width: 100%; max-height: 52px; height: auto; width: auto; pointer-events: none; }
+
+        .btn-theme { position: fixed; bottom: 20px; right: 20px; z-index: 1000; padding: 15px; cursor: pointer; border-radius: 50%; border: none; font-size: 1.5rem; background: var(--accent); color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        @media (max-width: 850px) {
+            .cat-body { grid-template-columns: 1fr; }
+            .col-blocs { display: none; }
+        }
     </style>
 </head>
-<body>
+<body class="sombre">
+
+    <button class="btn-theme" onclick="toggleTheme()" title="Changer le mode">🌓</button>
 
     <div id="vue-portail">
-        <h1 class="logo-titre">RoboBlocs 🤖</h1>
-        <div class="btn-robot" onclick="ouvrirRobot('mBot2')">
-            <div class="robot-placeholder">🤖</div>
-            <h2 style="font-family:'Fredoka One'">mBot 2</h2>
-            <p>Explorer les blocs CyberPi</p>
+        <div class="logo-titre">RoboBlocs</div>
+        <div class="logo-sous-titre">Documentation interactive des blocs de programmation 🚀</div>
+        
+        <h2 style="margin-top:50px; font-family:'Fredoka One';">🎯 Sélectionnez votre plateforme robotique</h2>
+        
+        <div class="robots-grid">
+            <div class="robot-card" onclick="ouvrirRobot('mbot2')">
+                <img src="images/mbot2.jpeg" class="robot-img" alt="mBot 2">
+                <h3 style="font-family:'Fredoka One'; font-size: 1.8rem;">mBot 2</h3>
+                <p style="color:#666; font-size:1rem; margin-top:10px;">Explorez les ressources de programmation pour CyberPi et mBot 2 via mBlock 5.</p>
+                <button class="btn-retour" style="margin-top:20px; width:100%;">▶ Explorer les ressources →</button>
+            </div>
+            
+            <div class="robot-card" style="opacity:0.7; cursor:not-allowed;">
+                <span style="position:absolute; top:15px; right:15px; background:#eee; padding:5px 10px; border-radius:10px; font-size:0.7rem; font-weight:bold;">BIENTÔT</span>
+                <div style="font-size:4rem; margin-bottom:15px;">🦾</div>
+                <h3 style="font-family:'Fredoka One'; font-size: 1.8rem;">Thymio</h3>
+                <p style="color:#666; font-size:1rem; margin-top:10px;">Le support pédagogique pour le robot Thymio est actuellement en cours de développement.</p>
+                <button class="btn-retour" style="margin-top:20px; width:100%; background:#f0f0f0; border-color:#ccc; color:#aaa;">⏳ En cours...</button>
+            </div>
         </div>
+        <p style="margin-top:60px; color:#666; font-size:0.9rem;">Développé avec ❤️ par Hugo D. , Claude AI & Gemini — Support pédagogique</p>
     </div>
 
     <div id="vue-mbot2">
-        <div style="text-align:center; margin-bottom:40px;">
-            <button onclick="retourPortail()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:700;">← Retour</button>
-            <h2 style="font-family:'Fredoka One'; font-size:2.5rem; margin-top:10px;">Blocs mBot 2</h2>
-        </div>
-
-        <div class="controls">
-            <input type="text" id="inputSearch" placeholder="Rechercher un bloc..." onkeyup="filtrer()">
-            <button class="btn-theme" onclick="toggleTheme()">🌓</button>
-        </div>
-
-        <div class="grid-categories" id="container-categories">
+        <header>
+            <button class="btn-retour" onclick="retourPortail()" style="position:absolute; left:20px; top:30px;">← Accueil</button>
+            <img src="images/mbot2.jpeg" class="header-robot" alt="mBot 2">
+            <h1 style="font-family:'Fredoka One'; font-size:3rem; color:#764ba2; margin-top:10px;">Lexique mBot 2</h1>
+            <p style="font-size:1.2rem; font-weight:700;">Guide de référence technique des blocs mBlock 🚀</p>
+            
+            <div style="max-width:700px; margin:30px auto 0; background:rgba(255,255,255,0.05); padding:20px; border-radius:15px; line-height:1.6;">
+                <h3 style="color:#764ba2; margin-bottom:10px;">Comment utiliser ce guide ?</h3>
+                <p style="font-size:0.95rem;">La programmation s'effectue par l'assemblage de <b>blocs logiques colorés</b>. Sélectionnez une catégorie ci-dessous, puis cliquez sur une instruction pour obtenir sa définition technique et un exemple concret.</p>
             </div>
+        </header>
+
+        <div class="recherche-zone">
+            <div class="recherche-box">
+                <span style="font-size:1.5rem;">🔍</span>
+                <input type="text" id="inputSearch" class="recherche-input" placeholder="Rechercher une instruction (ex: LED, moteur, son)..." oninput="filtrer()">
+            </div>
+        </div>
+
+        <div class="grid" id="mainGrid"></div>
     </div>
 
     <div id="vue-categorie">
-        <button onclick="fermerCategorie()" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:700; margin-bottom:20px;">← Retour aux catégories</button>
-        <div id="detail-contenu"></div>
+        <div class="cat-header">
+            <button class="btn-retour" onclick="fermerCategorie()">← Retour</button>
+            <h2 id="catTitre" style="font-family:'Fredoka One'; font-size:2rem; color:white;"></h2>
+        </div>
+        <div class="cat-body">
+            <div class="col-blocs" id="listeBlocs"></div>
+            <div class="col-fiche" id="zoneFiche">
+                <div style="text-align:center; opacity:0.3; margin-top:150px;">
+                    <span style="font-size:5rem;">👈</span>
+                    <p style="font-size:1.2rem; font-weight:700; margin-top:10px;">Sélectionnez un bloc pour afficher sa documentation.</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        var categories = [
+        /* --- DONNÉES COMPLÈTES --- */
+
+var categories = [
   {
     id:"audio", icon:"🔊", titre:"Audio", couleur:"#BB8FD8",
     couleur2:"#9b6bbf",
@@ -456,63 +522,80 @@
   },
 ];
 
-        function ouvrirRobot(robot) {
-            document.getElementById('vue-portail').style.display = 'none';
-            document.getElementById('vue-mbot2').style.display = 'block';
-            
-            const container = document.getElementById('container-categories');
-            container.innerHTML = '';
-
-            DATA[robot].forEach((cat, index) => {
-                const card = document.createElement('div');
-                card.className = 'cat-card';
-                card.style.background = cat.couleur + '22';
-                card.style.borderColor = cat.couleur;
-                card.innerHTML = `
-                    <h3 style="font-family:'Fredoka One'; color:${cat.couleur}; margin-bottom:10px;">${cat.nom}</h3>
-                    <p style="font-size:0.9rem; opacity:0.8;">${cat.description}</p>
-                `;
-                card.onclick = () => afficherCategorie(robot, index);
-                container.appendChild(card);
-            });
+        /* --- LOGIQUE DE FONCTIONNEMENT --- */
+        function ouvrirRobot(id) {
+            if(id === 'mbot2') {
+                document.getElementById('vue-portail').style.display = 'none';
+                document.getElementById('vue-mbot2').style.display = 'block';
+                genererGrille();
+            }
         }
 
-        function afficherCategorie(robot, index) {
-            const cat = DATA[robot][index];
+        function retourPortail() {
+            document.getElementById('vue-portail').style.display = 'flex';
             document.getElementById('vue-mbot2').style.display = 'none';
-            const vue = document.getElementById('vue-categorie');
-            vue.style.display = 'block';
-
-            let html = `<h2 style="font-family:'Fredoka One'; color:${cat.couleur}; margin-bottom:30px;">${cat.nom}</h2>`;
-            
-            cat.blocs.forEach(bloc => {
-                html += genererBloc(bloc, cat);
-            });
-
-            document.getElementById('detail-contenu').innerHTML = html;
         }
 
-        function genererBloc(bloc, cat) {
-            return `
-                <div class="fiche-bloc">
-                    <div style="text-align:center; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:20px; border-radius:15px; font-size: 50px;">
-                        🤖
+        function genererGrille() {
+            const grid = document.getElementById('mainGrid');
+            grid.innerHTML = categories.map(cat => `
+                <div class="cat-card" style="background:${cat.couleur}" onclick="ouvrirCategorie('${cat.id}')">
+                    <div style="font-size:3.5rem;">${cat.icon}</div>
+                    <h3 style="font-family:'Fredoka One'; margin:15px 0; font-size:1.4rem;">${cat.titre}</h3>
+                    <p style="font-size:0.9rem; opacity:0.9; font-weight:600;">${cat.desc}</p>
+                    <div style="margin-top:15px; background:rgba(255,255,255,0.2); display:inline-block; padding:5px 15px; border-radius:15px; font-size:0.8rem; font-weight:800;">${cat.blocs.length} blocs</div>
+                </div>
+            `).join('');
+        }
+
+        function ouvrirCategorie(id) {
+            const cat = categories.find(c => c.id === id);
+            document.getElementById('vue-mbot2').style.display = 'none';
+            document.getElementById('vue-categorie').style.display = 'grid';
+            document.getElementById('catTitre').innerHTML = `${cat.icon} ${cat.titre}`;
+            
+            const liste = document.getElementById('listeBlocs');
+            liste.innerHTML = cat.blocs.map((bloc, index) => `
+                <div class="bloc-vignette" style="--cat-color:${cat.couleur}" onclick="afficherFiche('${cat.id}', ${index})">
+                    <img src="images/${bloc.svg}" onerror="this.outerHTML='<b style=\'color:white\'>${bloc.nom}</b>'">
+                </div>
+            `).join('');
+        }
+
+        function afficherFiche(catId, blocIndex) {
+            const cat = categories.find(c => c.id === catId);
+            const bloc = cat.blocs[blocIndex];
+            const zone = document.getElementById('zoneFiche');
+
+            let exempleHTML = '';
+            if (bloc.exemple) {
+                exempleHTML = `
+                    <div style="margin-top:25px;">
+                        <div class="explication-titre">💡 Exemple d'application</div>
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                            ${bloc.exemple.map(ex => `
+                                <div style="background:${cat.couleur}; padding:10px 18px; border-radius:10px; color:white; font-weight:800; width:fit-content; box-shadow:0 4px 10px rgba(0,0,0,0.1); border-left:5px solid rgba(0,0,0,0.3);">
+                                    ${ex}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            zone.innerHTML = `
+                <div class="fiche" style="--accent:${cat.couleur}">
+                    <div style="text-align:center; margin-bottom:30px; background:rgba(255,255,255,0.05); padding:20px; border-radius:15px;">
+                        <img src="images/${bloc.svg}" style="max-width:100%; filter:drop-shadow(0 5px 15px rgba(0,0,0,0.2));" onerror="this.style.display='none'">
                     </div>
                     <h3 style="font-family:'Fredoka One'; color:${cat.couleur}; font-size:1.8rem; margin-bottom:15px;">${bloc.nom}</h3>
                     <div class="fiche-explication">
                         <div class="explication-titre">✳ Définition technique</div>
                         <p style="font-weight:700; line-height:1.6;">${bloc.desc}</p>
                     </div>
-                    <div style="margin-top:15px; padding:10px; border-left:4px solid ${cat.couleur};">
-                        <small>Exemple : ${bloc.exemple}</small>
-                    </div>
+                    ${exempleHTML}
                 </div>
             `;
-        }
-
-        function retourPortail() {
-            document.getElementById('vue-mbot2').style.display = 'none';
-            document.getElementById('vue-portail').style.display = 'flex';
         }
 
         function fermerCategorie() {
